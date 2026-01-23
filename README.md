@@ -260,9 +260,9 @@ CONS (+)
 
 ---
 ## Tradeoffs Auth0 vs Ory Hydra+Kratos
-AUTH0 vs ORY (HYDRA + KRATOS)
 
 AUTH0
+```
 PROS (+)
   * Setup: Fully managed SaaS, quick setup with minimal configuration.
   * Features: Comprehensive auth solution (login UI, MFA, social/enterprise SSO, user management, all included).
@@ -278,8 +278,9 @@ CONS (-)
   * Performance & control: Latency and behavior tied to Auth0 regions and infrastructure; limited tuning.
   * Data Sovereignty: User data stored in Auth0's infrastructure (compliance risk in some regions).
   * Flexibility: Difficult to implement non-standard OAuth flows or custom business logic.
-
+```
 ORY (HYDRA + KRATOS)
+```
 PROS (+)
   * Cost: Open source (Apache 2.0), self-hosted = free for unlimited users. Ory Network offers managed option.
   * Control: Full control over infrastructure, data residency, deployment topology.
@@ -296,7 +297,7 @@ CONS (-)
   * Integration Work: Social logins and enterprise SSO require configuration and custom integration code.
   * Support: Community support only (unless paying for Ory Network or enterprise support).
   * Time-to-Market: Longer initial setup and customization compared to turnkey SaaS solutions.
-
+```
 ## Tradeoffs SQL vs NoSql
 
 SQL — Tradeoffs
