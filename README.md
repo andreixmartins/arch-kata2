@@ -6,8 +6,7 @@
 
 What is the problem? What is the context of the problem?
 
-We need to build a voting system for a huge tv show or event where 300 Million people might use it.  At the busiest moment, 250K people will vote every single second.The system cannot crash, cannot lose a single vote, and must show the results instantly when request, one person, one vote. No cheaters should be allowed.
-
+We need to build a voting system for a huge tv show or event where 300 Million people might use it. At the busiest moment, 250K people will vote every single second.The system cannot crash, cannot lose a single vote, and must show the results instantly when request, one person, one vote. No cheaters should be allowed.
 
 Recomended Reading: http://diego-pacheco.blogspot.com/2021/10/breaking-problems-down.html
 
@@ -77,10 +76,14 @@ Tradeoffs:
 
 ```
 1. AWS Cognito vs Keycloak
-2. AWS ECS vs AWS EKS
-3. AWS KEYSPACES vs AWS RDS POSTGRES
-4. Redis (Self-Hosted) vs AWS Elastic Cache
-5. LiveKit vs WebRTC
+2. AWS ECS on Fargate vs AWS EKS on Fargate
+3. AWS RDS PostgreSQL vs AWS DynamoDB
+4. AWS MSK (KAFKA) vs AWS SQS
+5. Redis (Self-Hosted) vs AWS Elastic Cache
+6. Auth0 vs Ory Hydra+Kratos
+7. SQL vs NoSql
+8. X-Ray vs Jaeger
+
 ```
 
 ## AWS Cognito vs Keycloak
@@ -115,8 +118,9 @@ CONS (+)
 ## Computation Scale
 
 AWS EKS on Fargate
+
 ```
-PROS (+) 
+PROS (+)
   * Management: No management, cluster simplicity with Fargate profiles.
   * Isolation: No cluster nodes, each pod runs in a micro-VM with Firecracker.
   * Billing: No capacity plan, pay per use, CPU and memory usage only.
@@ -129,8 +133,9 @@ CONS (+)
 ```
 
 AWS ECS on Fargate
+
 ```
-PROS (+) 
+PROS (+)
   * Zero infrastructure management: AWS handles provisioning, scaling, patching.
   * Isolation: Strong security boundary per task (ideal for multi-tenancy).
   * Pay-as-you-go: Billing is per vCPU and GiB-hour, no wasted capacity.
@@ -142,17 +147,19 @@ CONS (+)
   * Quotas: Fargate launch throttles and ephemeral storage (~20 GiB default).
   * Observability: No DaemonSets — logging/monitoring agents must run as sidecars (extra cost overhead).
 ```
+
 ---
 
 ## Database
 
 AWS RDS PostgreSQL
+
 ```
-PROS (+) 
+PROS (+)
   * Scalability: Scales vertically and horizontally via Aurora read replicas.
   * Performance: Strong OLTP performance with indexes and joins.
   * Latency: Low-latency reads in multiple Regions
-  
+
 CONS (+)
   * Limitation: Must use RDS Proxy or pooling for apps with millions of users.
   * Operation: Still need to think about version upgrades, storage, scaling thresholds, and failover planning.
@@ -160,8 +167,9 @@ CONS (+)
 ```
 
 AWS DynamoDB
+
 ```
-PROS (+) 
+PROS (+)
   * Performance: Single-digit millisecond latency at any scale(SSD-backed).
   * Scalability: Horizontal Scaling included by design, Automatic partitioning, trillions of items, 10M+ req/sec.
   * Availability: Built-in multi-AZ replication(multi-region, active-active).
@@ -221,9 +229,11 @@ CONS (+)
 ```
 
 ---
+
 ## Tradeoffs Auth0 vs Ory Hydra+Kratos
 
 AUTH0
+
 ```
 PROS (+)
   * Setup: Fully managed SaaS, quick setup with minimal configuration.
@@ -241,7 +251,9 @@ CONS (-)
   * Data Sovereignty: User data stored in Auth0's infrastructure (compliance risk in some regions).
   * Flexibility: Difficult to implement non-standard OAuth flows or custom business logic.
 ```
+
 ORY (HYDRA + KRATOS)
+
 ```
 PROS (+)
   * Cost: Open source (Apache 2.0), self-hosted = free for unlimited users. Ory Network offers managed option.
@@ -260,6 +272,7 @@ CONS (-)
   * Support: Community support only (unless paying for Ory Network or enterprise support).
   * Time-to-Market: Longer initial setup and customization compared to turnkey SaaS solutions.
 ```
+
 ## Tradeoffs SQL vs NoSql
 
 SQL — Tradeoffs
@@ -298,6 +311,11 @@ CONS (-)
   * Integrity: Application must enforce invariants — error-prone and unsafe for voting systems.
   * Querying: Complex relational queries and joins are not supported or require manual composition.
   * Auditability: Harder to guarantee deterministic, tamper-proof, append-only records.
+
+
+**Final Bottom Line**
+
+For a system where **one person must vote exactly once**, and where **data integrity is non-negotiable**, SQL is clearly superior.
 ```
 
 X-Ray x Jaeger
@@ -309,7 +327,7 @@ X-ray
   * Deep integration with AWS
   * Automatic service maps
   * Very simple for those who are 100% AWS
-  
+
   - Automatically instruments:
     API Gateway
     Lambda
@@ -324,7 +342,7 @@ Jaeger
   * Ideal for hybrid or self-hosted environments
   * No vendor lock-in
   * More flexible
-  
+
   - Pluggable with:
     Grafana
     Prometheus
@@ -353,16 +371,19 @@ data stored in the AWS Cloud. As an API Gateway API developer, you can create AP
 These values can be increased?
 
 1. Request a quota increase
-  - Using Service Quotas
-  - AWS typically allocates 100k+ RPS for large workloads
+
+- Using Service Quotas
+- AWS typically allocates 100k+ RPS for large workloads
 
 2. Distribute load by region
-  - Each region has its own limit (you can use 20000 RPS splitting traffic between 5 regions for example)
-  - Very common approach in global architectures
+
+- Each region has its own limit (you can use 20000 RPS splitting traffic between 5 regions for example)
+- Very common approach in global architectures
 
 3. Use CloudFront in front of the API Gateway
-  - Caching drastically reduces the number of requests
-  - CloudFront does not count as a direct request to the API Gateway if cached
+
+- Caching drastically reduces the number of requests
+- CloudFront does not count as a direct request to the API Gateway if cached
 
 Link for Amazon API Gateway quotas: https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html
 
@@ -389,6 +410,7 @@ In addition to global account limits, you can set limits per API or per customer
 - These per-client applied rules help control API access and usage.
 
 ## WebSocket Specific (Per API):
+
 - Routes per API: 300 (can be increased).
 - Stages per API: 10 (can be increased).
 - Connections: No hard limit on concurrent connections, but there is a limit on new connections per second (around 500, adjustable).
@@ -396,28 +418,35 @@ In addition to global account limits, you can set limits per API or per customer
 # Endpoints:
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>AUTHENTICATION</span>
+
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/login</span>
+
 - User authentication endpoint usually used to identify the current user session and fetch user data. Response must return the user_id and user token.
   1. username and password are required fields
   - request
+
   ```json
   {
-    "username" : "string",
-    "password" : "string"    
+    "username": "string",
+    "password": "string"
   }
   ```
+
   - response
+
   ```json
   {
-    "user_id" : "string",
-    "token" : "string"
+    "user_id": "string",
+    "token": "string"
   }
   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>REGISTRATION</span>
+
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/register</span>
+
 - User registration endpoint used to create a new user in the system. Response must return the user_id.
   1. Authorization header with Bearer token is required
   2. Fields username, password, email and date_of_birth are required
@@ -425,30 +454,37 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/register</span>
   4. Response code failure for invalid fields must be 400 Bad Request
   5. Response code failure for unauthorized must be 401 Unauthorized
   - headers
+
   ```json
   {
-    "Authorization" : "Bearer token"
+    "Authorization": "Bearer token"
   }
   ```
+
   - request
+
   ```json
   {
-    "username" : "string",
-    "password" : "string",
-    "email" : "string",
-    "date_of_birth" : "string"
+    "username": "string",
+    "password": "string",
+    "email": "string",
+    "date_of_birth": "string"
   }
   ```
+
   - response
+
   ```json
   {
-    "user_id" : "string"
+    "user_id": "string"
   }
   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>CREATE EVENT</span>
+
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/create</span>
+
 - Endpoint to create a new voting event. Response must return the event_id, event_name and the list of contestants created.
   1. Authorization header with Bearer token is required
   2. Fields user_id, event_name, contestants, contestant_name, contestant_description, contestant_image_url are required
@@ -456,12 +492,15 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/create</span>
   4. Response code failure for invalid fields must be 400 Bad Request
   5. Response code failure for unauthorized must be 401 Unauthorized
   - headers
+
   ```json
   {
-    "Authorization" : "Bearer token"
+    "Authorization": "Bearer token"
   }
   ```
+
   - request
+
   ```json
   {
     "user_id": "string",
@@ -475,10 +514,12 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/create</span>
     ]
   }
   ```
+
   - response
+
   ```json
   {
-    "event_id" : "string",
+    "event_id": "string",
     "event_name": "string",
     "contestants": [
       {
@@ -490,8 +531,10 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/create</span>
   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>GET EVENT LEADERBOARD</span>
+
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/{event_id}/leaderboard</span>
+
 - Endpoint to get the leaderboard of a given event. Response must return the event_id, event_name and the list of contestants with their total votes.
   1. Authorization header with Bearer token is required
   2. Field event_id is required
@@ -500,16 +543,19 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/{event_id}/leaderb
   5. Response code failure for unauthorized must be 401 Unauthorized
   6. Response code failure event_id not found must be 404 Not Found
   - headers
+
   ```json
   {
-    "Authorization" : "Bearer token"
+    "Authorization": "Bearer token"
   }
   ```
+
   - response
+
   ```json
   {
-    "event_id" : "string",
-    "event_name" : "string",
+    "event_id": "string",
+    "event_name": "string",
     "contestants": [
       {
         "contestant_id": "string",
@@ -521,8 +567,10 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/{event_id}/leaderb
   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>GET CONTESTANTS LIST</span>
+
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{event_id}</span>
+
 - Endpoint to get the list of contestants for a given event. Response must return the event_id and the list of contestants.
   1. Authorization header with Bearer token is required
   2. Url parameter field event_id is required
@@ -531,15 +579,18 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{event_id}</
   5. Response code failure for unauthorized must be 401 Unauthorized
   6. Response code failure for event_id not found must be 404 Not Found
   - headers
+
   ```json
   {
-    "Authorization" : "Bearer token"
+    "Authorization": "Bearer token"
   }
   ```
+
   - response
+
   ```json
   {
-    "event_id" : "string",
+    "event_id": "string",
     "contestants": [
       {
         "contestant_id": "string",
@@ -551,8 +602,10 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{event_id}</
   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>SUBMIT A VOTE</span>
+
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
+
 - Endpoint to submit a vote for a given event. Response must return the vote_id.
   1. Authorization header with Bearer token is required
   2. Fields user_id, event_id, contestant_id are required
@@ -562,12 +615,15 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
   6. Response code failure for contestant_id and/or event_id not found must be 404 Not Found
   7. Response code failure for duplicate vote must be 409 Conflict
   - headers
+
   ```json
   {
-    "Authorization" : "Bearer token"
+    "Authorization": "Bearer token"
   }
   ```
+
   - request
+
   ```json
   {
     "user_id": "string",
@@ -575,48 +631,21 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
     "contestant_id": "string",
     "client_timestamp": "string",
     "meta": {
-        "device_id": "string",
-        "app_version": "string"
+      "device_id": "string",
+      "app_version": "string"
     }
   }
   ```
+
   - response
+
   ```json
   {
-    "vote_id" : "string"
+    "vote_id": "string"
   }
   ```
 
-**Final Bottom Line**
-
-For a system where **one person must vote exactly once**, and where **data integrity is non-negotiable**, SQL is clearly superior.
-
 ---
-
-## LiveKit vs WebRTC (self hosted)
-
-LiveKit
-
-```
-PROS (+)
-  * Scalability: Designed with cloud-native scaling in mind; Kubernetes-ready with multi-node support and autoscaling.
-  * Setup and Maintenance: Easy to deploy with prebuilt Docker images and Helm charts. Managed cloud option available (LiveKit Cloud).
-  * Availability: LiveKit Cloud offers high availability out of the box with managed infrastructure and SLAs.
-CONS (+)
-  * Complexity: Abstracted logic limits low-level control. Custom media routing or deep protocol tweaks are not straightforward.
-  * Cost: LiveKit Cloud can become expensive at scale compared to self-hosted SFUs like MediaSoup.
-```
-
-WebRTC
-
-```
-PROS (+)
-  * Scalability: Can scale with custom SFU (Selective Forwarding Unit) setup.
-  * Optimization: Can deeply optimize SFU settings.
-CONS (+)
-  * Setup and Maintenance: Must build it from scratch. Must self-host, integrate, and configure.
-  * Security: You are Responsible for correct, secure and authentication setups.
-```
 
 PS: Be careful to not confuse problem with explanation.
 <BR/>Recommended reading: http://diego-pacheco.blogspot.com/2023/07/tradeoffs.html
@@ -645,13 +674,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/login</span>
 - User authentication endpoint usually used to identify the current user session and fetch user data. Response must return the userId and user token.
   1. username and password are required fields
   - request
+
   ```json
   {
     "username": "string",
     "password": "string"
   }
   ```
+
   - response
+
   ```json
   {
     "userId": "string",
@@ -667,12 +699,15 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/logout</span>
 - Invalidate user session
   1. username is required
   - request
+
   ```json
   {
     "username": "string"
   }
   ```
+
   - response
+
   ```json
   {
     success : boolean
@@ -696,6 +731,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/account</span>
   9. After account confirmation user account_status should be updated to A (active). update account update_date column with current date
   10. After these steps user can log into app
   - request
+
   ```json
   {
     firstName : "string",
@@ -705,7 +741,9 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/account</span>
     password : "string"
   }
   ```
+
   - response
+
   ```json
   {
     id: long
@@ -721,12 +759,15 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/account/profile</span>
 - Create user profile allowing the user create/update user settings, privacy and notifications
   1. user_id is required
   - request
+
   ```json
   {
     "user_id": "string"
   }
   ```
+
   - response
+
   ```json
   {
     "firstName": "string",
@@ -744,13 +785,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/user</span>
 - Fetch user by username or user_id,
   1. To fetch user information , you must add to the payload the user_id or username
   - request
+
   ```json
   {
     "user_id": "string",
     "username": "string"
   }
   ```
+
   - response
+
   ```json
   {
     "firstName": "string",
@@ -771,6 +815,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/user/notification</span>
   2. You must pass an offset to the payload to paginate the notification list
   3. user_id is required, limit default value is 50, offset default value is zero
   - request
+
   ```json
   {
     user_id : "string"
@@ -778,7 +823,9 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/user/notification</span>
     offset: integer
   }
   ```
+
   - response
+
   ```json
   {
     "notifications": []
@@ -795,13 +842,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/user/messages</span>
   2. room_id is required
   3. It will fetch all active user messages
   - request
+
   ```json
   {
     user_id : "string"
     room_id :integer
   }
   ```
+
   - response
+
   ```json
   {
     "messages": []
@@ -814,10 +864,8 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/user/messages</span>
 
 - This endpoint will provide a soft delete of user messages updating the message_status to R (Removed)
-
   1. user_id is required
   2. messages_id - list of messages_id
-
   - request
 
   ```json
@@ -842,12 +890,15 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/user/status</span>
 
 - Update user status to ONLINE or OFFLINE
   - request
+
   ```json
   {
     status : int
   }
   ```
+
   - response
+
   ```json
   {
     success : boolean
@@ -860,10 +911,8 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/user/picture</span>
 
 - Upload the user profile picture
-
   1. user_id is required
   2. image is required, this image must be encoded in base64
-
   - request
 
   ```json
@@ -889,11 +938,9 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/payment</span>
 
 - Perform payment of subscription purchase using payment gateway
-
   1. tenant_id is required
   2. total is required
   3. payment_gateway is required
-
   - request
 
   ```json
@@ -920,12 +967,10 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/dojo/create</span>
 
 - Create a Dojo Room for a tenant
-
   1. tenant_id is required
   2. schedule date for a session
   3. team members
   4. subject
-
   - request
 
   ```json
@@ -951,10 +996,8 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/dojo/start</span>
 
 - Start a Recording of a Dojo session
-
   1. tenant_id is required
   2. dojo_id is required
-
   - request
 
   ```json
@@ -978,10 +1021,8 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/dojo/stop</span>
 
 - Stop a record of a Dojo Room session
-
   1. tenant_id is required
   2. dojo_id is required
-
   - request
 
   ```json
@@ -1007,9 +1048,7 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/report/anual</span>
 
 - Generate an anual report for entire year from specific tenant
-
   1. tenant_id is required
-
   - request
 
   ```json
@@ -1032,9 +1071,7 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/report/billing</span>
 
 - Generate a Billing report for a specific tenant
-
   1. tenant_id is required
-
   - request
 
   ```json
@@ -1053,69 +1090,74 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/report/billing</span>
 
 #### 6.3 Persistence Model
 
-### **User**
+### **users**
 
-| NAME      | TYPE      | SIZE | NOT NULL | DEFAULT           | DESCRIPTION                 |
-| --------- | --------- | ---- | -------- | ----------------- | --------------------------- |
-| id        | uuid      |      | NO       |                   | uuid primary key            |
-| tenantid  | uuid      |      | NO       |                   | uuid user table             |
-| username  | varchar   | 15   | NO       |                   | username must have an index |
-| firstname | varchar   | 30   | NO       |                   |                             |
-| lastname  | varchar   | 30   | NO       |                   |                             |
-| email     | varchar   | 50   | NO       |                   |                             |
-| age       | tinyint   | 3    | NO       |                   |                             |
-| created   | timestamp |      | NO       | current_timestamp |                             |
-| updated   | timestamp |      | NO       | current_timestamp |                             |
+| Name             | Type        | Size     | NOT NULL | Default           | Description         |
+| ---------------- | ----------- | -------- | -------- | ----------------- | ------------------- |
+| user_id          | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key         |
+| auth_provider    | text        | var      | YES      |                   | e.g., Google, Apple |
+| auth_provider_id | text        | var      | YES      |                   | Unique per provider |
+| email            | text        | var      | NO       |                   | Optional contact    |
+| phone            | text        | var      | NO       |                   | Optional contact    |
+| created_at       | timestamptz | 8 bytes  | YES      | now()             | Creation timestamp  |
 
-### **Room**
+---
 
-- PRIMARY KEY (userid, created)
+### **voter_identities**
 
-| NAME     | TYPE      | SIZE | NOT NULL | DEFAULT           | DESCRIPTION             |
-| -------- | --------- | ---- | -------- | ----------------- | ----------------------- |
-| id       | uuid      |      | NO       |                   | uuid primary key        |
-| userid   | uuid      |      | NO       |                   | uuid user table         |
-| tenantid | uuid      |      | NO       |                   | uuid user table         |
-| date     | timestamp |      | NO       |                   | Dojo scheduled date     |
-| name     | varchar   | 50   | NO       |                   | name must have an index |
-| status   | varchar   | 1    | NO       | A                 | A-Active, I-Inactive    |
-| created  | timestamp |      | NO       | current_timestamp |                         |
-| updated  | timestamp |      | NO       | current_timestamp |                         |
+| Name          | Type        | Size     | NOT NULL | Default           | Description                            |
+| ------------- | ----------- | -------- | -------- | ----------------- | -------------------------------------- |
+| voter_id      | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key (global voter identity)    |
+| user_id       | uuid        | 16 bytes | YES      |                   | FK → users(user_id)                    |
+| identity_hash | text        | var      | YES      |                   | Hashed real identity for deduplication |
+| created_at    | timestamptz | 8 bytes  | YES      | now()             | Creation timestamp                     |
 
-### **Billing**
+---
 
-- PRIMARY KEY (tenantid, paymentgateway)
+### **elections**
 
-| NAME           | TYPE      | SIZE | NOT NULL | DEFAULT           | DESCRIPTION              |
-| -------------- | --------- | ---- | -------- | ----------------- | ------------------------ |
-| id             | uuid      |      | NO       |                   | uuid primary key         |
-| tenantid       | uuid      |      | NO       |                   | uuid user table          |
-| plan           | varchar   | 15   | NO       |                   | M - monthly - Y - yearly |
-| price          | float     | 10   | NO       | A                 | Total amount             |
-| expirationdate | timestamp |      | NO       |                   | Expiration date plan     |
-| autorenew      | integer   | 1    | NO       |                   | 0 - NO - 1 - YES         |
-| paymentgateway | varchar   | 10   | NO       |                   | Payment gateway name     |
-| created        | timestamp |      | NO       | current_timestamp |                          |
-| updated        | timestamp |      | NO       | current_timestamp |                          |
+| Name        | Type        | Size     | NOT NULL | Default           | Description           |
+| ----------- | ----------- | -------- | -------- | ----------------- | --------------------- |
+| election_id | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key           |
+| name        | text        | var      | YES      |                   | Election/display name |
+| status      | text        | var      | YES      |                   | draft, open, closed   |
+| starts_at   | timestamptz | 8 bytes  | NO       |                   | When voting starts    |
+| ends_at     | timestamptz | 8 bytes  | NO       |                   | When voting ends      |
 
-### **PocUser**
+---
 
-- PRIMARY KEY (userid, tenantid, created)
+### **votes**
 
-| NAME     | TYPE      | SIZE | NOT NULL | DEFAULT           | DESCRIPTION                    |
-| -------- | --------- | ---- | -------- | ----------------- | ------------------------------ |
-| id       | uuid      |      | NO       |                   | uuid                           |
-| userid   | uuid      |      | NO       |                   | uuid user table                |
-| tenantid | uuid      |      | NO       |                   | uuid user table                |
-| name     | varchar   |      | NO       |                   | POC Name                       |
-| language | uuid      |      | NO       |                   | POC languages e.g java, js, GO |
-| favorite | integer   | 1    | NO       | N                 | N - NO - Y - YES               |
-| tags     | varchar   | 255  | NO       |                   | POC Tags                       |
-| repourl  | varchar   | 255  | NO       |                   | POC Repo URL                   |
-| created  | timestamp |      | NO       | current_timestamp |                                |
-| updated  | timestamp |      | NO       | current_timestamp |                                |
+| Name         | Type        | Size     | NOT NULL | Default           | Description                                          |
+| ------------ | ----------- | -------- | -------- | ----------------- | ---------------------------------------------------- |
+| vote_id      | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key                                          |
+| election_id  | uuid        | 16 bytes | YES      |                   | FK → elections(election_id)                          |
+| voter_id     | uuid        | 16 bytes | YES      |                   | FK → voter_identities(voter_id)                      |
+| vote_payload | jsonb       | var      | YES      |                   | Encrypted/anonymized ballot                          |
+| timestamp    | timestamptz | 8 bytes  | YES      | now()             | Vote submission time                                 |
+| receipt_hash | text        | var      | YES      |                   | Unique vote receipt                                  |
+| —            | UNIQUE      | —        | —        | —                 | (election_id, voter_id) enforces one vote per person |
 
-Note: Cassandra database does not have a column size property. We must limit the number of characters on the application side.
+# Final Summary
+
+### **1. One real person → One global voter_id**
+
+Permanent for all elections.
+
+### **2. One vote per election**
+
+Enforced by `UNIQUE(election_id, voter_id)`.
+
+### **3. Minimal tables**
+
+Only 4 tables remain.
+
+### **4. Clean privacy boundaries**
+
+Personal data stays only in USERS.
+Voting data uses only `voter_id`.
+
+---
 
 - AWS POSTGRESQL REPORT TABLE
 
