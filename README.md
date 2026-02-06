@@ -5,42 +5,20 @@
 ### 1. 🎯 Problem Statement and Context
 
 What is the problem? What is the context of the problem?
-Example:
 
-```
-MR Bill, wants a system to keep track of his favorite pocs, so you need to build a mobile app where mr Bill can register all his pocs, and also
-he needs to be able to search pocs, by name, by language,m by tags.
-This system should be multi-tenant because mr bill will sell such system to.
-Bunch of people in brazil, such system must have also ability to generate repots and generate a video with the all pocs
-the users did in 1 year. Such system must be secure and have proper login and be able to support Realtime dojos using mr bill platform you will build for him.
+We need to build a voting system for a huge tv show or event where 300 Million people might use it.  At the busiest moment, 250K people will vote every single second.The system cannot crash, cannot lose a single vote, and must show the results instantly when request, one person, one vote. No cheaters should be allowed.
 
-1. Track favorites POCs
-2. Mobile native app to register POC
-3. Searching POCs by name, language and tags
-4. Multi-tentant system
-5. Generate reports
-6. Generate videos
-7. System must be secure
-8. Users will have their credentials
-
-
-```
 
 Recomended Reading: http://diego-pacheco.blogspot.com/2021/10/breaking-problems-down.html
 
 ### 2. 🎯 Goals
 
-List in form of bullets what goals do have. Here it's great to have 5-10 lines.
-Example:
-
-```
-1. Security is non-negociable! Security at-rest, transite, threat analysis and review for by at least 3 different people.
-2. Mobile-native: We want a native app using Swift and Kotlin
-3. Cloud-Native: All backend must be 100% cloud native, using AWS Cloud services
-4. Microservices: Do not use AWS Lambdas. App services must use the microservice architecture
-5. Cache: AWS Elastic Cache to cache user data information
-6. Tests: Employ unit tests, integration tests, regression tests, chaos tests
-```
+- Handle the Traffic: the system must be strong enough to take 250k hits per second without breaking.
+- Save Every Vote: When someone votes, we make sure it is saved safely before we tell them success.
+- Stop Cheaters: We need security guards to block bots before they get in.
+- Real-time speed: We need to send the vote count to everyone's phone instantly, like a live scoreboard.
+- Stay Online: Even if part of the system breaks, the rest must keep working so people can still vote.
+- No Double voting: We need to make sure nobody votes twice.
 
 Recommended Learning: http://diego-pacheco.blogspot.com/2020/05/education-vs-learning.html
 
