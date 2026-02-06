@@ -656,6 +656,120 @@ What is a majore component? A service, a lambda, a important ui, a generalized a
 
 ## 6.1 - Class Diagram
 
+@startuml
+
+' =========================
+' ENUMS
+' =========================
+
+enum UserStatus {
+ACTIVE
+BLOCKED
+DELETED
+}
+
+enum EventStatus {
+DRAFT
+OPEN
+CLOSED
+ARCHIVED
+}
+
+' =========================
+' DOMAIN ENTITIES
+' =========================
+
+class User {
+- id: UUID
+- userName: String
+- email: String
+- password: String
+- dateOfBirth: LocalDate
+- createdAt: Instant
+- status: UserStatus
+
++ authenticate(password: String): boolean
++ changePassword(oldPassword: String, newPassword: String): void
++ isActive(): boolean
+  }
+
+class Event {
+- id: UUID
+- name: String
+- createdBy: UUID
+- status: EventStatus
+- createdAt: Instant
+
++ addContestant(contestant: Contestant): void
++ changeStatus(status: EventStatus): void
++ createEvent(userId: UUID, name: String): void
+  }
+
+class Vote {
+- id: UUID
+- userId: UUID
+- eventId: UUID
+- contestantId: UUID
+- createdAt: Instant
+- deviceId: String
+- appVersion: String
+  }
+
+class Contestant {
+- id: UUID
+- eventId: UUID
+- name: String
+- description: String
+- createdAt: Instant
+  }
+
+class VoteCounter {
+- eventId: UUID
+- contestantId: UUID
+- totalVotes: Long
+
++ incrementVote(): void
+  }
+
+class Login {
+- token: String
+- userId: UUID
+
++ isExpired(): boolean
++ revoke(): void
+  }
+
+' =========================
+' SERVICES
+' =========================
+
+class AuthService {
++ login(username: String, password: String): AuthToken
++ register(user: User): UUID
++ validateToken(token: String): UUID
+  }
+
+class EventService {
++ createEvent(userId: UUID, name:String, contestants: List<Contestant>): Event
++ getEvent(eventId: UUID): Event
++ getListContestants(eventId: UUID): List<Contestant>
++ getLeaderboard(eventId: UUID): List<VoteCounter>
+  }
+
+
+' =========================
+' RELATIONSHIPS
+' =========================
+
+User "1" --> "*" Vote
+User "1" --> "*" Event : createEvent
+Event "1" --> "*" Vote
+Event "1" --> "*" Contestant
+Vote "*" --> "*" Contestant
+Contestant "1" --> "1" VoteCounter
+
+@enduml
+
 <img src="images/class_diagram_v2.png">
 
 ## 6.2 - Contract Documentation
