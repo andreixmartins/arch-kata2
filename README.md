@@ -35,18 +35,8 @@ Recommended Reading: http://diego-pacheco.blogspot.com/2021/01/requirements-are-
 ### 📐 3. Principles
 
 List in form of bullets what design principles you want to be followed, it's great to have 5-10 lines.
-Example:
 
-```
-1. Low Coupling: We need to watch for coupling all times.
-2. Flexibility: Users should be able to customize behavior without leaking the internals of the system. Leverage interfaces.
-3. Observability: we should expose all key metrics on main features. Sucess and errors counters need to be exposed.
-4. Testability: Chaos engineering is a must and property testing. Testing should be done by engineers all times.
-5. Cache efficiency: Should leverage SSD caches and all forms of caches as much as possible.
-6. Testability: We must apply unit-test, regression-tests, chaos tests
-7. Scalability: Handle amounts of work, data, or users without performance degradation
-8. Availability: Ensure a high level of uptime 99.9%
-```
+1 - Event-Driven Architecture: Use asynchronous ingestion via a message broker (kafka/sqs) to decouple high-velocity writes from processing.
 
 Recommended Reading: http://diego-pacheco.blogspot.com/2018/01/stability-principles.html
 
