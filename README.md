@@ -27,14 +27,8 @@ Recommended Learning: http://diego-pacheco.blogspot.com/2020/05/education-vs-lea
 List in form of bullets what non-goals do have. Here it's great to have 5-10 lines.
 Example:
 
-```
-1. Be perfect: There will be mistakes, we dont want have automatic-rollback for everything.
-2. DynamoDB: Dynamo is expensive, we want be away from the DB.
-3. AWS Lambdas: We do not want to use it.
-4. Monoliths: We must not use monolith architecture
-5. Single Relational Database: We must use relational database distributed in different AZ
-6. Other Cloud Services: We must only use AWS Services
-```
+- No monolith: We won't build one giant block of software. We will break it into small pieces so it's easier to manage.
+- No mainframes: We wont use mainframe computers or keep servers in our own office. We will use Cloud (AWS).
 
 Recommended Reading: http://diego-pacheco.blogspot.com/2021/01/requirements-are-dangerous.html
 
