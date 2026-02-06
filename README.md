@@ -67,7 +67,7 @@ example:
 Major Decisions:
 
 ```
-1. Two mobile code base - Mobile application should be developed in Swift to handle IOS and Kotlin for Android versions.
+1. One mobile code base - Mobile and web applications should be developed in Flutter to handle Web, IOS and Android versions.
 2. Backend application should be built using microservices separated by schema/domains instead of serveless approach.
 3. Cache - Use AWS Elastic cache instead of Redis
 ```
@@ -75,7 +75,7 @@ Major Decisions:
 Tradeoffs:
 
 ```
-1. AWS Cognito vs Keycloak
+1. Flutter vs Native
 2. AWS ECS on Fargate vs AWS EKS on Fargate
 3. AWS RDS PostgreSQL vs AWS DynamoDB
 4. AWS MSK (KAFKA) vs AWS SQS
@@ -86,33 +86,19 @@ Tradeoffs:
 
 ```
 
-## AWS Cognito vs Keycloak
-
-AWS Cognito
-
+## Flutter vs Native
 ```
-PROS (+)
-  * Setup and Maintenance: Easy to set up with managed service, minimal infra overhead.
-  * Cost: Pricing based on MAUs (monthly active users), no server costs.
-  * Integration: Tight integration with AWS (IAM, API Gateway, Lambda).
+PROS (+) 
+  * One Codebase: Streamlines maintenance and ensures feature parity across iOS and Android.
+  * Near Native Performance: Compiled to ARM/Machine code for high-speed execution.
+  * Consistent UI: Pixel-perfect rendering across all devices via the Skia/Impeller engines.
+  * Security Access: Direct integration with Secure Enclave (iOS) and Keystore (Android).
+  * Realtime Ready: Native-level support for WebSockets, gRPC, and Streams.
+
 CONS (+)
-  * Scalability: Bound to AWS regions and infra.
-  * Customization: Branding and flow changes limited to AWS features.
-  * Vendor Lock-in: Difficult to migrate away from AWS infra.
-```
-
-Keycloak
-
-```
-PROS (+)
-  * Setup and Maintenance: Full control over installation, configuration, and setup.
-  * Scalability: Can scale with Kubernetes/infra as needed.
-  * Cost: Open-source, no license fees.
-  * Customization: Fully customizable login, flows, and theming.
-  * Integration: Works well across cloud and on-prem systems (OIDC, SAML, LDAP).
-CONS (+)
-  * Limitations: Full burden of upgrades and migration lies on you.
-  * Security: Security depends on in-house team vigilance.
+  * Engine Overhead: Larger binary sizes compared to pure native apps.
+  * Native Integration: Advanced features may require platform specific "Method Channels" (Swift/Kotlin).
+  * Ecosystem: Some niche libraries may be less mature than their native counterparts.
 ```
 
 ## Computation Scale
@@ -1367,8 +1353,9 @@ select currentDate(), dateof(now()), id, userid, name, created from app.room whe
 
 Describe your stack, what databases would be used, what servers, what kind of components, mobile/ui approach, general architecture components, frameworks and libs to be used or not be used and why.
 
-- Android UI: Kotlin
-- IOS UI: Swift
+- Frontend: Flutter (see Frontend Architecture section)
+- Native channels: Kotlin (Android) / Swift (iOS)
+- Security: OAuth2 + OIDC (PKCE), Biometrics
 - Language: Java 23
 - Framework: Spring Boot 3
 - Container: Docker
