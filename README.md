@@ -47,7 +47,946 @@ Here there will be a bunch of diagrams, to understand the solution.
 
 <img src="images/overall_diagram_simple_v2.png">
 
-<img src="images/overall_diagram.png">
+<img src="images/model1-rds.png">
+
+# Model #1 - RDS Voter System Architecture Analysis - for 250K TPS
+
+## Architecture Overview
+
+This architecture is designed to handle a high-throughput voter system capable of processing **250,000 transactions per second (TPS)**. The design uses a modern AWS stack with event-driven architecture, distributed caching, and multi-master database configuration.
+
+
+
+## Component Analysis
+
+### 1. CloudFront + WAF
+
+**Purpose**: Content delivery network and application firewall for DDoS protection and global distribution.
+
+#### Pros
+- Global edge locations reduce latency for distributed voters
+- WAF protects against Layer 7 attacks, SQL injection, XSS
+- Built-in DDoS protection with AWS Shield Standard (free)
+- Offloads static content delivery from origin
+- SSL/TLS termination at edge reduces backend load
+- Request filtering before reaching backend (saves compute costs)
+
+#### Cons
+- Adds ~50-100ms latency for cache misses
+- Additional cost for data transfer and requests
+- Cache invalidation complexity for real-time voting updates
+- WAF rules require tuning to avoid false positives
+- Not suitable if all requests must hit backend (no caching benefit)
+
+#### Trade-offs
+- **Security vs Latency**: WAF inspection adds processing time but protects against attacks
+- **Cost vs Performance**: CloudFront costs can be high at 250K TPS but reduces origin load
+- **Caching vs Freshness**: Aggressive caching saves costs but may serve stale data
+
+#### Implementation Example
+
+```yaml
+# CloudFormation - CloudFront Distribution with WAF
+Resources:
+  VoterCDN:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+          - Id: nlb-origin
+            DomainName: !GetAtt NetworkLoadBalancer.DNSName
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [TLSv1.2]
+        DefaultCacheBehavior:
+          TargetOriginId: nlb-origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled for voting
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+        WebACLId: !GetAtt VoterWAF.Arn
+
+  VoterWAF:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Scope: CLOUDFRONT
+      DefaultAction:
+        Allow: {}
+      Rules:
+        - Name: RateLimitRule
+          Priority: 1
+          Statement:
+            RateBasedStatement:
+              Limit: 2000
+              AggregateKeyType: IP
+          Action:
+            Block: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: RateLimitRule
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 2
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          OverrideAction:
+            None: {}
+```
+
+**Cost Estimate**: ~$2,000-5,000/month (250K requests/sec = 648B requests/month at $0.0075/10K requests + data transfer)
+
+---
+
+### 2. Network Load Balancer (NLB)
+
+**Purpose**: High-performance Layer 4 load balancer for distributing traffic to EKS nodes.
+
+#### Pros
+- Handles millions of requests per second with ultra-low latency (<100μs)
+- Preserves source IP address for accurate voter tracking
+- Static IP addresses for DNS and whitelist configurations
+- Connection-based routing (not request-based like ALB)
+- Cross-zone load balancing for high availability
+- Lower cost than ALB for high throughput
+
+#### Cons
+- No Layer 7 features (no HTTP routing, headers, cookies)
+- No native WAF integration (must use CloudFront WAF)
+- Limited health check options compared to ALB
+- Cannot route based on URL paths or hostnames
+- No built-in authentication (OAuth, Cognito)
+
+#### Trade-offs
+- **Performance vs Features**: NLB is faster but lacks ALB's Layer 7 capabilities
+- **Cost vs Throughput**: At 250K TPS, NLB is more cost-effective than ALB
+- **Simplicity vs Flexibility**: Connection-based routing is simpler but less flexible
+
+#### Implementation Example
+
+```yaml
+# CloudFormation - Network Load Balancer
+Resources:
+  NetworkLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: network
+      Scheme: internet-facing
+      IpAddressType: ipv4
+      Subnets:
+        - !Ref PublicSubnetAZ1
+        - !Ref PublicSubnetAZ2
+        - !Ref PublicSubnetAZ3
+      Tags:
+        - Key: Name
+          Value: voter-nlb
+
+  NLBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 8080
+      Protocol: TCP
+      VpcId: !Ref VPC
+      TargetType: ip
+      HealthCheckEnabled: true
+      HealthCheckProtocol: TCP
+      HealthCheckIntervalSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      Deregistration DelayTimeoutSeconds: 30
+
+  NLBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: !Ref ACMCertificate
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NLBTargetGroup
+```
+
+**Cost Estimate**: ~$200-300/month (NLB hours + LCU charges)
+
+---
+
+### 3. Amazon EKS (Multi-AZ - 3 Nodes, 150 Pods Total)
+
+**Purpose**: Container orchestration for running voter application microservices with high availability.
+
+#### Pros
+- Managed Kubernetes with automatic updates and patching
+- Multi-AZ deployment ensures high availability
+- Auto-scaling (HPA and Cluster Autoscaler) handles traffic spikes
+- Native integration with AWS services (IAM, CloudWatch, VPC)
+- Rolling updates with zero downtime
+- Resource isolation per pod (CPU, memory limits)
+- 50 pods per node = efficient resource utilization
+
+#### Cons
+- Complexity: Kubernetes has steep learning curve
+- Cost: Control plane costs $0.10/hour ($73/month) per cluster
+- Over-provisioning: 150 pods may be excessive for some workloads
+- Networking overhead with service mesh/CNI plugins
+- Requires DevOps expertise for production operations
+- Startup time slower than serverless alternatives (Lambda)
+
+#### Trade-offs
+- **Flexibility vs Simplicity**: EKS offers container flexibility but adds operational complexity
+- **Cost vs Control**: More expensive than Fargate but allows fine-grained node control
+- **Scalability vs Overhead**: Powerful scaling but requires careful resource management
+
+#### Implementation Example
+
+```yaml
+# EKS Cluster with eksctl
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: voter-cluster
+  region: us-east-1
+  version: "1.29"
+
+availabilityZones: ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+iam:
+  withOIDC: true
+
+managedNodeGroups:
+  - name: voter-ng-az1
+    instanceType: m5.2xlarge  # 8 vCPU, 32GB RAM
+    minSize: 1
+    maxSize: 5
+    desiredCapacity: 1
+    availabilityZones: ["us-east-1a"]
+    privateNetworking: true
+    labels:
+      role: voter-app
+      zone: az1
+    taints:
+      - key: workload
+        value: voter
+        effect: NoSchedule
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        cloudWatch: true
+        ebs: true
+
+  - name: voter-ng-az2
+    instanceType: m5.2xlarge
+    minSize: 1
+    maxSize: 5
+    desiredCapacity: 1
+    availabilityZones: ["us-east-1b"]
+    privateNetworking: true
+    labels:
+      role: voter-app
+      zone: az2
+
+  - name: voter-ng-az3
+    instanceType: m5.2xlarge
+    minSize: 1
+    maxSize: 5
+    desiredCapacity: 1
+    availabilityZones: ["us-east-1c"]
+    privateNetworking: true
+    labels:
+      role: voter-app
+      zone: az3
+
+addons:
+  - name: vpc-cni
+  - name: coredns
+  - name: kube-proxy
+  - name: aws-ebs-csi-driver
+
+cloudWatch:
+  clusterLogging:
+    enableTypes: ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+```
+
+```yaml
+# Kubernetes Deployment - Voter App
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voter-app
+  namespace: voting
+spec:
+  replicas: 150  # 50 pods per node across 3 nodes
+  selector:
+    matchLabels:
+      app: voter
+  template:
+    metadata:
+      labels:
+        app: voter
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: voter
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: voter
+          image: 123456789.dkr.ecr.us-east-1.amazonaws.com/voter:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          env:
+            - name: KAFKA_BROKERS
+              value: "b-1.voter-msk.xxx.kafka.us-east-1.amazonaws.com:9092"
+            - name: REDIS_ENDPOINT
+              value: "voter-cache.xxx.cache.amazonaws.com:6379"
+            - name: DB_READ_ENDPOINT
+              value: "voter-aurora-ro.cluster-ro-xxx.us-east-1.rds.amazonaws.com"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+```
+
+```yaml
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: voter-hpa
+  namespace: voting
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: voter-app
+  minReplicas: 50
+  maxReplicas: 300
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+```
+
+**Cost Estimate**:
+- Control plane: $73/month
+- 3 x m5.2xlarge nodes: ~$1,850/month (3 x $0.384/hour x 730 hours)
+- **Total**: ~$1,923/month (base configuration)
+
+---
+
+### 4. Amazon MSK (Managed Streaming for Apache Kafka - 100 Partitions)
+
+**Purpose**: Event streaming platform for asynchronous vote processing and decoupling producers from consumers.
+
+#### Pros
+- Fully managed Kafka (no ZooKeeper management in MSK 2.8+)
+- High throughput: Each broker handles 40MB/s ingress, 60MB/s egress
+- 100 partitions enable massive parallelism for consumers
+- Durability: Multi-AZ replication with configurable retention (default 7 days)
+- Integrates with AWS IAM for authentication
+- Event replay capability for auditing and recovery
+- Decouples API layer from database writes (async processing)
+
+#### Cons
+- Cost: MSK is expensive (~$200/month per broker, minimum 3 brokers)
+- Complexity: Requires Kafka expertise for tuning (partitions, retention, compression)
+- Latency: Async processing adds delay (not suitable for real-time consistency)
+- Over-provisioning: 100 partitions may be excessive if consumers can't keep up
+- Partition rebalancing can cause temporary slowdowns
+- No serverless option (must provision broker capacity)
+
+#### Trade-offs
+- **Throughput vs Cost**: 100 partitions provide massive throughput but require more brokers
+- **Async vs Sync**: Event-driven architecture improves scalability but adds eventual consistency
+- **Durability vs Storage**: Longer retention periods increase storage costs
+
+#### Implementation Example
+
+```yaml
+# CloudFormation - MSK Cluster
+Resources:
+  VoterMSKCluster:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: voter-msk-cluster
+      KafkaVersion: "3.5.1"
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.xlarge  # 4 vCPU, 16GB RAM
+        ClientSubnets:
+          - !Ref PrivateSubnetAZ1
+          - !Ref PrivateSubnetAZ2
+          - !Ref PrivateSubnetAZ3
+        SecurityGroups:
+          - !Ref MSKSecurityGroup
+        StorageInfo:
+          EBSStorageInfo:
+            VolumeSize: 1000  # 1TB per broker
+            ProvisionedThroughput:
+              Enabled: true
+              VolumeThroughput: 250  # MB/s
+      EncryptionInfo:
+        EncryptionInTransit:
+          ClientBroker: TLS
+          InCluster: true
+        EncryptionAtRest:
+          DataVolumeKMSKeyId: !Ref KMSKey
+      ClientAuthentication:
+        Sasl:
+          Iam:
+            Enabled: true
+      ConfigurationInfo:
+        Arn: !Ref MSKConfiguration
+        Revision: 1
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: true
+            LogGroup: !Ref MSKLogGroup
+
+  MSKConfiguration:
+    Type: AWS::MSK::Configuration
+    Properties:
+      Name: voter-msk-config
+      ServerProperties: |
+        auto.create.topics.enable=false
+        default.replication.factor=3
+        min.insync.replicas=2
+        num.partitions=100
+        log.retention.hours=168
+        compression.type=lz4
+        max.request.size=1048576
+        message.max.bytes=1048576
+```
+
+
+**Cost Estimate**: ~$1,650/month (3 x kafka.m5.xlarge brokers + storage)
+
+---
+
+### 5. ElastiCache Redis (15 Shards)
+
+**Purpose**: Distributed in-memory cache for read-heavy operations and session management.
+
+#### Pros
+- Sub-millisecond latency for reads (reduces Aurora load by 80-90%)
+- 15 shards enable horizontal scaling to ~750GB memory
+- Cluster mode provides automatic sharding and replication
+- Multi-AZ with automatic failover (<30 seconds)
+- Supports complex data structures (sorted sets for leaderboards)
+- Read replicas per shard for read scaling
+- Reduces database costs by caching frequent queries
+
+#### Cons
+- Cost: ElastiCache is expensive (~$150-300/node depending on instance type)
+- Cache invalidation complexity (requires careful strategy)
+- Cold start: Empty cache leads to "thundering herd" on database
+- Not suitable for durable storage (data can be lost on failover)
+- 15 shards may be over-provisioned for workload
+- Network overhead for cluster mode vs single node
+
+#### Trade-offs
+- **Performance vs Cost**: In-memory speed is expensive at scale
+- **Consistency vs Availability**: Cache can serve stale data during invalidation
+- **Sharding vs Simplicity**: 15 shards improve throughput but increase operational complexity
+
+#### Implementation Example
+
+```yaml
+# CloudFormation - ElastiCache Redis Cluster
+Resources:
+  VoterRedisCluster:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupId: voter-redis-cluster
+      ReplicationGroupDescription: Voter session and result cache
+      Engine: redis
+      EngineVersion: "7.0"
+      CacheNodeType: cache.r6g.xlarge  # 4 vCPU, 26.32 GB RAM
+      NumNodeGroups: 15  # 15 shards
+      ReplicasPerNodeGroup: 2  # 2 read replicas per shard
+      AutomaticFailoverEnabled: true
+      MultiAZEnabled: true
+      CacheSubnetGroupName: !Ref CacheSubnetGroup
+      SecurityGroupIds:
+        - !Ref RedisSecurityGroup
+      AtRestEncryptionEnabled: true
+      TransitEncryptionEnabled: true
+      AuthToken: !Ref RedisAuthToken
+      SnapshotRetentionLimit: 5
+      SnapshotWindow: "03:00-05:00"
+      PreferredMaintenanceWindow: "sun:05:00-sun:07:00"
+      CacheParameterGroupName: !Ref RedisParameterGroup
+
+  RedisParameterGroup:
+    Type: AWS::ElastiCache::ParameterGroup
+    Properties:
+      CacheParameterGroupFamily: redis7
+      Description: Voter Redis configuration
+      Properties:
+        maxmemory-policy: allkeys-lru
+        timeout: 300
+        tcp-keepalive: 300
+```
+
+**Cost Estimate**: ~$6,750/month (15 shards x 3 nodes x cache.r6g.xlarge at $0.308/hour)
+
+---
+
+### 6. Amazon EKS Consumer (50 Pods)
+
+**Purpose**: Dedicated consumer pods for processing Kafka messages and writing to Aurora.
+
+#### Pros
+- Separation of concerns: Decouples API layer from write processing
+- 50 consumers can process 100 partitions with 2 partitions per consumer
+- Batch processing improves database write throughput (bulk inserts)
+- Independent scaling from API layer
+- Retry logic and dead letter queue handling
+- Enables complex event processing (aggregations, enrichment)
+
+#### Cons
+- Additional infrastructure cost (separate EKS deployment)
+- Increased complexity with two EKS clusters/deployments
+- Consumer lag monitoring required
+- Potential message processing delays under load
+- 50 pods may be over-provisioned or under-provisioned depending on throughput
+
+#### Trade-offs
+- **Throughput vs Latency**: Batch processing improves throughput but adds delay
+- **Parallelism vs Overhead**: More consumers increase throughput but add coordination overhead
+- **Resilience vs Complexity**: Consumer group management adds complexity but improves fault tolerance
+
+#### Implementation Example
+
+```yaml
+# Kubernetes Deployment - Kafka Consumer
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voter-consumer
+  namespace: voting
+spec:
+  replicas: 50  # 50 consumer pods
+  selector:
+    matchLabels:
+      app: voter-consumer
+  template:
+    metadata:
+      labels:
+        app: voter-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: 123456789.dkr.ecr.us-east-1.amazonaws.com/voter-consumer:latest
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          env:
+            - name: KAFKA_BROKERS
+              value: "b-1.voter-msk.xxx.kafka.us-east-1.amazonaws.com:9092"
+            - name: KAFKA_GROUP_ID
+              value: "voter-consumer-group"
+            - name: KAFKA_TOPIC
+              value: "votes"
+            - name: DB_WRITER_ENDPOINT_0
+              value: "voter-aurora-writer-0.cluster-xxx.us-east-1.rds.amazonaws.com"
+            - name: DB_WRITER_ENDPOINT_1
+              value: "voter-aurora-writer-1.cluster-xxx.us-east-1.rds.amazonaws.com"
+            - name: BATCH_SIZE
+              value: "500"
+            - name: BATCH_TIMEOUT_MS
+              value: "1000"
+```
+
+
+**Cost Estimate**: Included in EKS cluster cost (uses same cluster, different deployment)
+
+---
+
+### 7. Amazon Aurora Multi-Master (2 Writers, Sharded 0-99)
+
+**Purpose**: Multi-master database configuration for distributed writes and eliminating write bottlenecks.
+
+#### Pros
+- **True active-active**: Both writers accept writes simultaneously (no primary/replica)
+- Eliminates single-writer bottleneck (can handle 2x write throughput)
+- Sharding (0-49, 50-99) enables horizontal write scaling
+- Automatic failover between masters (<30 seconds)
+- ACID compliance for transactional integrity
+- Built-in replication to read replicas
+- Storage auto-scales up to 128TB per cluster
+
+#### Cons
+- **Cost**: Multi-Master is 2x cost of single-writer Aurora
+- **Conflict resolution**: Application must handle write conflicts (last-write-wins)
+- Complexity: Requires application-level shard routing logic
+- Limited to 4 writer nodes maximum (not truly unlimited scaling)
+- Higher latency than single-writer due to conflict detection
+- Not all Aurora features supported (e.g., Global Database)
+- Write conflicts can cause transaction retries
+
+#### Trade-offs
+- **Write Throughput vs Complexity**: Multi-Master scales writes but requires conflict handling
+- **Availability vs Cost**: Active-active provides better uptime but doubles database cost
+- **Sharding vs Operational Overhead**: Manual sharding improves scalability but adds routing logic
+
+#### Implementation Example
+
+```yaml
+# CloudFormation - Aurora Multi-Master Cluster
+Resources:
+  AuroraMultiMasterCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      EngineVersion: "13.9"
+      EngineMode: multimaster
+      DatabaseName: voting
+      MasterUsername: admin
+      MasterUserPassword: !Ref DBPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref AuroraSecurityGroup
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: "03:00-04:00"
+      PreferredMaintenanceWindow: "sun:04:00-sun:05:00"
+      StorageEncrypted: true
+      KmsKeyId: !Ref KMSKey
+      EnableCloudwatchLogsExports:
+        - postgresql
+
+  # Writer Instance 0 (Shard 0-49)
+  AuroraWriter0:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref AuroraMultiMasterCluster
+      DBInstanceClass: db.r6g.4xlarge  # 16 vCPU, 128GB RAM
+      Engine: aurora-postgresql
+      PubliclyAccessible: false
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Shard
+          Value: "0-49"
+
+  # Writer Instance 1 (Shard 50-99)
+  AuroraWriter1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref AuroraMultiMasterCluster
+      DBInstanceClass: db.r6g.4xlarge
+      Engine: aurora-postgresql
+      PubliclyAccessible: false
+      AvailabilityZone: us-east-1b
+      Tags:
+        - Key: Shard
+          Value: "50-99"
+```
+
+
+**Cost Estimate**: ~$4,160/month (2 x db.r6g.4xlarge at $1.44/hour x 730 hours + storage)
+
+---
+
+### 8. Amazon Aurora Read Replicas (15X)
+
+**Purpose**: Scale read operations horizontally to handle 250K TPS read queries without impacting writers.
+
+#### Pros
+- 15 read replicas distribute query load (each handles ~16.6K TPS)
+- Sub-10ms replication lag from multi-master writers
+- Automatic failover promotion if writer fails
+- Independent scaling from writers (add replicas without downtime)
+- Offloads reporting and analytics queries from production writers
+- Aurora Auto Scaling can add/remove replicas based on CPU/connections
+- Cross-region read replicas for disaster recovery
+
+#### Cons
+- Cost: 15 replicas at db.r6g.4xlarge = ~$31,200/month
+- Eventual consistency: Replication lag can serve stale data (1-10ms typical)
+- Storage costs shared across cluster (but I/O costs per replica)
+- Over-provisioning: 15 replicas may exceed actual read demand
+- Connection management complexity (requires connection pooling)
+
+#### Trade-offs
+- **Read Scalability vs Cost**: More replicas improve read performance but scale linearly in cost
+- **Consistency vs Performance**: Replicas provide eventual consistency, not strong consistency
+- **Availability vs Complexity**: More replicas improve fault tolerance but complicate connection routing
+
+#### Implementation Example
+
+```yaml
+# CloudFormation - Aurora Read Replicas
+Resources:
+  # Read Replicas 1-15
+  AuroraReadReplica1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref AuroraMultiMasterCluster
+      DBInstanceClass: db.r6g.4xlarge
+      Engine: aurora-postgresql
+      PubliclyAccessible: false
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Role
+          Value: ReadReplica
+
+  # ... Repeat for replicas 2-15 across availability zones ...
+
+  # Aurora Reader Endpoint (load balances across all replicas)
+  AuroraReaderEndpoint:
+    Type: AWS::RDS::DBClusterEndpoint
+    Properties:
+      DBClusterIdentifier: !Ref AuroraMultiMasterCluster
+      DBClusterEndpointIdentifier: voter-reader-endpoint
+      EndpointType: READER
+```
+
+
+**Cost Estimate**: ~$31,200/month (15 x db.r6g.4xlarge at $1.44/hour x 730 hours)
+
+---
+
+### 9. Amazon S3 Glacier (Audit Logs)
+
+**Purpose**: Long-term archival storage for vote audit trail and compliance.
+
+#### Pros
+- Extremely low cost: $0.004/GB/month (99% cheaper than S3 Standard)
+- Durability: 99.999999999% (11 nines)
+- Compliance: Immutable storage with Object Lock (WORM)
+- Lifecycle policies automate archival from Aurora/S3 Standard
+- Supports legal hold and retention policies
+- Integrated with AWS Audit Manager for compliance frameworks
+
+#### Cons
+- Retrieval latency: 1-12 hours for standard retrieval
+- Retrieval cost: $0.01-0.03/GB depending on speed
+- Minimum storage duration: 90 days (early deletion fees)
+- Not suitable for active/frequent access
+- Bulk retrievals only practical for large investigations
+
+#### Trade-offs
+- **Cost vs Access Speed**: Glacier is cheap but slow to retrieve
+- **Compliance vs Operational Flexibility**: Immutability ensures compliance but prevents modifications
+- **Storage Duration vs Flexibility**: 90-day minimum commitment
+
+#### Implementation Example
+
+```yaml
+# CloudFormation - S3 Bucket with Glacier Lifecycle
+Resources:
+  VoterAuditBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: voter-audit-logs
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: TransitionToGlacier
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 30
+                StorageClass: GLACIER
+              - TransitionInDays: 365
+                StorageClass: DEEP_ARCHIVE
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 90
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      ObjectLockEnabled: true
+      ObjectLockConfiguration:
+        ObjectLockEnabled: Enabled
+        Rule:
+          DefaultRetention:
+            Mode: COMPLIANCE
+            Years: 7  # 7-year retention for compliance
+```
+
+
+**Cost Estimate**: ~$40-100/month (10TB/year at $0.004/GB/month)
+
+---
+
+### 10. CloudWatch + X-Ray
+
+**Purpose**: Comprehensive monitoring, logging, and distributed tracing for observability.
+
+#### Pros
+- **CloudWatch**: Centralized logs, metrics, and alarms for all AWS services
+- **X-Ray**: End-to-end request tracing across EKS, MSK, Aurora
+- Real-time dashboards for TPS, latency, error rates
+- Automated alarms for anomaly detection (SNS notifications)
+- Log Insights for advanced query analysis
+- Integration with Container Insights for EKS pod-level metrics
+- Retention policies to manage log storage costs
+
+#### Cons
+- Cost: CloudWatch Logs can be expensive at scale ($0.50/GB ingested)
+- X-Ray adds 5-10ms latency per traced request
+- Alert fatigue if alarms not tuned properly
+- Requires instrumentation in application code
+- Log retention costs accumulate over time
+
+#### Trade-offs
+- **Observability vs Cost**: Detailed logging is expensive but critical for debugging
+- **Tracing Overhead vs Insights**: X-Ray adds latency but provides invaluable debugging data
+- **Retention vs Storage**: Longer retention improves forensics but increases costs
+
+#### Implementation Example
+
+```yaml
+# CloudFormation - CloudWatch Dashboard and Alarms
+Resources:
+  VoterDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: voter-system-dashboard
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  ["AWS/EKS", "RequestCount", {"stat": "Sum", "label": "Total Requests"}],
+                  ["AWS/Kafka", "BytesInPerSec", {"stat": "Average"}],
+                  ["AWS/RDS", "DatabaseConnections", {"stat": "Average"}],
+                  ["AWS/ElastiCache", "CacheHits", {"stat": "Sum"}]
+                ],
+                "period": 60,
+                "stat": "Average",
+                "region": "us-east-1",
+                "title": "Voter System Overview"
+              }
+            }
+          ]
+        }
+
+  HighErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: voter-high-error-rate
+      MetricName: 5XXError
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 100
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopic
+
+  HighLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: voter-high-latency
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 1.0  # 1 second
+      ComparisonOperator: GreaterThanThreshold
+```
+
+**Cost Estimate**: ~$500-1,000/month (CloudWatch Logs + X-Ray traces)
+
+---
+
+## Overall Architecture Assessment
+
+### Strengths
+
+1. **High Throughput**: Architecture can handle 250K TPS through horizontal scaling (EKS, MSK, Aurora)
+2. **High Availability**: Multi-AZ deployment across all components with automatic failover
+3. **Async Processing**: Kafka decouples API from writes, enabling better scalability
+4. **Read Optimization**: ElastiCache + 15 Aurora replicas drastically reduce database load
+5. **Write Scaling**: Multi-Master Aurora with sharding eliminates write bottlenecks
+6. **Security**: WAF, encryption at rest/transit, IAM authentication
+7. **Compliance**: S3 Glacier with Object Lock for immutable audit trail
+8. **Observability**: CloudWatch + X-Ray provide full-stack monitoring
+
+### Weaknesses
+
+1. **Cost**: Architecture is expensive (~$45K-50K/month) - may exceed startup budgets
+2. **Complexity**: Requires significant DevOps expertise (Kubernetes, Kafka, sharding)
+3. **Over-Provisioning**: 150 EKS pods, 100 Kafka partitions, 15 cache shards may be excessive
+4. **Eventual Consistency**: Async Kafka processing means votes aren't immediately visible
+5. **Operational Overhead**: Multi-Master conflict resolution, consumer lag monitoring, cache invalidation
+
+---
+
+## Monthly Cost Estimation
+
+| Component | Configuration | Monthly Cost |
+|-----------|--------------|--------------|
+| CloudFront + WAF | 648B requests/month | $3,500 |
+| Network Load Balancer | 3 AZs + LCUs | $250 |
+| EKS Control Plane | 1 cluster | $73 |
+| EKS Nodes | 3 x m5.2xlarge | $1,850 |
+| MSK Cluster | 3 x kafka.m5.xlarge | $1,650 |
+| ElastiCache Redis | 15 shards x 3 nodes (r6g.xlarge) | $6,750 |
+| Aurora Writers | 2 x db.r6g.4xlarge | $4,160 |
+| Aurora Read Replicas | 15 x db.r6g.4xlarge | $31,200 |
+| S3 Glacier | 10TB audit logs | $80 |
+| CloudWatch + X-Ray | Logs + traces | $750 |
+| Data Transfer | Inter-AZ and egress | $1,000 |
+| **Total Estimated Cost** | | **~$51,263/month** |
+
+## Conclusion
+
+This architecture is **well-designed for extreme scale (250K TPS)** with excellent use of AWS managed services. The combination of EKS for compute, MSK for event streaming, Multi-Master Aurora for writes, and ElastiCache for reads creates a highly scalable and available system.
+
+However, the **cost (~$51K/month) is substantial** and may be prohibitive for smaller organizations. The architecture also requires **significant operational expertise** in Kubernetes, Kafka, and distributed systems.
+
+For most use cases, a **phased approach** starting with smaller configurations and scaling based on actual traffic is recommended. Consider Aurora Serverless v2, fewer replicas, and smaller instance types initially to reduce costs by 50-65% while maintaining the architectural benefits.
+
 
 🗂️ 4.2 Deployment: Show the infra in a big picture.
 
