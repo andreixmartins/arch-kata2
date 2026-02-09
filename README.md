@@ -47,7 +47,7 @@ Here there will be a bunch of diagrams, to understand the solution.
 
 <img src="images/overall_diagram_simple_v2.png">
 
-<img src="images/model1-rds.png">
+
 
 # Model #1 - RDS Voter System Architecture Analysis - for 250K TPS
 
@@ -55,7 +55,7 @@ Here there will be a bunch of diagrams, to understand the solution.
 
 This architecture is designed to handle a high-throughput voter system capable of processing **250,000 transactions per second (TPS)**. The design uses a modern AWS stack with event-driven architecture, distributed caching, and multi-master database configuration.
 
-
+<img src="images/model1-rds.png">
 
 ## Component Analysis
 
