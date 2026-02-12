@@ -1,0 +1,35 @@
+@startuml Voting System API Use Case Diagram
+
+left to right direction
+
+actor "Voter" as voter
+actor "Admin" as admin
+
+rectangle "Voting System API" {
+  usecase "Register\nPOST v1/auth/register" as UC1
+  usecase "Login\nPOST v1/auth/login" as UC2
+  usecase "Logout\nPOST v1/auth/logout" as UC3
+  usecase "List Elections\nGET v1/elections" as UC4
+  usecase "Create Election\nPOST v1/election/create" as UC5
+  usecase "Get Election Leaderboard\nGET v1/election/{election_id}/leaderboard" as UC6
+  usecase "Get Contestants List\nGET v1/contestants/{election_id}" as UC7
+  usecase "Submit Vote\nPOST v1/vote/submit" as UC8
+  usecase "Verify Vote Status\nGET v1/vote/{vote_id}/status" as UC9
+}
+
+voter --> UC1
+voter --> UC2
+voter --> UC3
+voter --> UC4
+voter --> UC6
+voter --> UC7
+voter --> UC8
+voter --> UC9
+
+admin --> UC2
+admin --> UC3
+admin --> UC5
+
+admin --|> voter
+
+@enduml

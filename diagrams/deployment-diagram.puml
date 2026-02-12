@@ -1,0 +1,88 @@
+@startuml
+!include <awslib/AWSCommon>
+!include <awslib/AWSSimplified>
+!include <awslib/General/Users>
+!include <awslib/NetworkingContentDelivery/CloudFront>
+!include <awslib/SecurityIdentityCompliance/WAF>
+!include <awslib/NetworkingContentDelivery/ElasticLoadBalancing>
+!include <awslib/Containers/ElasticKubernetesService>
+!include <awslib/SecurityIdentityCompliance/Cognito>
+!include <awslib/Database/ElastiCache>
+!include <awslib/Analytics/ManagedStreamingforApacheKafka>
+!include <awslib/Database/Aurora>
+!include <awslib/Storage/SimpleStorageServiceGlacier>
+!include <awslib/ManagementGovernance/CloudWatch>
+!include <awslib/DeveloperTools/XRay>
+
+title Realtime Voting System - 250K TPS / 300M Users
+
+Users(users, "Mobile / Web Users", "300M users")
+
+package "AWS Cloud" {
+
+  package "Edge Layer" {
+    CloudFront(cdn, "CloudFront", "Global CDN")
+    WAF(waf, "AWS WAF", "DDoS & Bot Protection")
+  }
+
+  package "Voting VPC" {
+
+    package "Public Subnet" {
+      ElasticLoadBalancing(nlb, "Network Load Balancer", "Layer 4 - 3 AZs")
+    }
+
+    package "Private Subnet - Compute" {
+      Cognito(auth, "Auth Provider", "OAuth2 + JWT")
+      ElasticKubernetesService(eksApi, "EKS Vote API", "150 Pods / 3 Nodes")
+      ElasticKubernetesService(eksConsumer, "EKS Kafka Consumers", "50 Pods")
+    }
+
+    package "Private Subnet - Messaging" {
+      ManagedStreamingforApacheKafka(msk, "Amazon MSK", "Kafka - 100 Partitions")
+    }
+
+    package "Private Subnet - Cache" {
+      ElastiCache(redis, "ElastiCache Redis", "15 Shards - Session & Leaderboard")
+    }
+
+    package "Private Subnet - Database" {
+      Aurora(auroraWriter, "Aurora Multi-Master", "2 Writers - Shards 0-99")
+      Aurora(auroraReader, "Aurora Read Replicas", "15x Replicas")
+    }
+
+    package "Private Subnet - Storage" {
+      SimpleStorageServiceGlacier(glacier, "S3 Glacier", "Audit Logs - 7yr Retention")
+    }
+  }
+
+  package "Observability" {
+    CloudWatch(cw, "CloudWatch", "Metrics & Alarms")
+    XRay(xray, "X-Ray", "Distributed Tracing")
+  }
+}
+
+users --> cdn
+cdn --> waf
+waf --> nlb
+nlb --> auth
+auth --> eksApi
+
+eksApi --> redis : read cache
+eksApi --> auroraReader : read queries
+eksApi --> msk : publish votes
+
+msk --> eksConsumer : consume votes
+
+eksConsumer --> auroraWriter : batch writes
+eksConsumer --> glacier : audit logs
+
+auroraWriter --> auroraReader : replication
+
+eksApi ..> cw : metrics
+eksApi ..> xray : traces
+eksConsumer ..> cw : metrics
+msk ..> cw : metrics
+auroraWriter ..> cw : metrics
+redis ..> cw : metrics
+
+@enduml
