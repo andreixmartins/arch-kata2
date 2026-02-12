@@ -1340,6 +1340,14 @@ In addition to global account limits, you can set limits per API or per customer
 - Stages per API: 10 (can be increased).
 - Connections: No hard limit on concurrent connections, but there is a limit on new connections per second (around 500, adjustable).
 
+PS: Be careful to not confuse problem with explanation.
+<BR/>Recommended reading: http://diego-pacheco.blogspot.com/2023/07/tradeoffs.html
+
+### 🌏 6. For each key major component
+
+What is a majore component? A service, a lambda, a important ui, a generalized approach for all uis, a generazid approach for computing a workload, etc...
+
+
 # Endpoints:
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>AUTHENTICATION</span>
@@ -1405,14 +1413,14 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/register</span>
   }
   ```
 
-### <span style='color:#3BC143 ;font-weight: bold;'>CREATE EVENT</span>
+### <span style='color:#3BC143 ;font-weight: bold;'>CREATE ELECTION</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/create</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/create</span>
 
-- Endpoint to create a new voting event. Response must return the event_id, event_name and the list of contestants created.
+- Endpoint to create a new voting election. Response must return the election_id, election_name and the list of contestants created.
   1. Authorization header with Bearer token is required
-  2. Fields user_id, event_name, contestants, contestant_name, contestant_description, contestant_image_url are required
+  2. Fields user_id, election_name, contestants, contestant_name, contestant_description, contestant_image_url are required
   3. Response code success must be 201 Created
   4. Response code failure for invalid fields must be 400 Bad Request
   5. Response code failure for unauthorized must be 401 Unauthorized
@@ -1429,7 +1437,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/create</span>
   ```json
   {
     "user_id": "string",
-    "event_name": "string",
+    "election_name": "string",
     "contestants": [
       {
         "contestant_name": "string",
@@ -1444,8 +1452,8 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/create</span>
 
   ```json
   {
-    "event_id": "string",
-    "event_name": "string",
+    "election_id": "string",
+    "election_name": "string",
     "contestants": [
       {
         "contestant_id": "string",
@@ -1455,18 +1463,18 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/create</span>
   }
   ```
 
-### <span style='color:#3BC143 ;font-weight: bold;'>GET EVENT LEADERBOARD</span>
+### <span style='color:#3BC143 ;font-weight: bold;'>GET ELECTION LEADERBOARD</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/{event_id}/leaderboard</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}/leaderboard</span>
 
-- Endpoint to get the leaderboard of a given event. Response must return the event_id, event_name and the list of contestants with their total votes.
+- Endpoint to get the leaderboard of a given election. Response must return the election_id, election_name and the list of contestants with their total votes.
   1. Authorization header with Bearer token is required
-  2. Field event_id is required
+  2. Field election_id is required
   3. Response code success must be 200 OK
   4. Response code failure for invalid fields must be 400 Bad Request
   5. Response code failure for unauthorized must be 401 Unauthorized
-  6. Response code failure event_id not found must be 404 Not Found
+  6. Response code failure election_id not found must be 404 Not Found
   - headers
 
   ```json
@@ -1479,8 +1487,8 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/{event_id}/leaderb
 
   ```json
   {
-    "event_id": "string",
-    "event_name": "string",
+    "election_id": "string",
+    "election_name": "string",
     "contestants": [
       {
         "contestant_id": "string",
@@ -1494,15 +1502,15 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/event/{event_id}/leaderb
 ### <span style='color:#3BC143 ;font-weight: bold;'>GET CONTESTANTS LIST</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{event_id}</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{election_id}</span>
 
-- Endpoint to get the list of contestants for a given event. Response must return the event_id and the list of contestants.
+- Endpoint to get the list of contestants for a given election. Response must return the election_id and the list of contestants.
   1. Authorization header with Bearer token is required
-  2. Url parameter field event_id is required
+  2. Url parameter field election_id is required
   3. Response code success must be 200 OK
   4. Response code failure for invalid fields must be 400 Bad Request
   5. Response code failure for unauthorized must be 401 Unauthorized
-  6. Response code failure for event_id not found must be 404 Not Found
+  6. Response code failure for election_id not found must be 404 Not Found
   - headers
 
   ```json
@@ -1515,7 +1523,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{event_id}</
 
   ```json
   {
-    "event_id": "string",
+    "election_id": "string",
     "contestants": [
       {
         "contestant_id": "string",
@@ -1531,13 +1539,13 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{event_id}</
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
 
-- Endpoint to submit a vote for a given event. Response must return the vote_id.
+- Endpoint to submit a vote for a given election. Response must return the vote_id.
   1. Authorization header with Bearer token is required
-  2. Fields user_id, event_id, contestant_id are required
+  2. Fields user_id, election_id, contestant_id are required
   3. Response code success must be 200 OK
   4. Response code failure for invalid fields must be 400 Bad Request
   5. Response code failure for unauthorized must be 401 Unauthorized
-  6. Response code failure for contestant_id and/or event_id not found must be 404 Not Found
+  6. Response code failure for contestant_id and/or election_id not found must be 404 Not Found
   7. Response code failure for duplicate vote must be 409 Conflict
   - headers
 
@@ -1552,7 +1560,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
   ```json
   {
     "user_id": "string",
-    "event_id": "string",
+    "election_id": "string",
     "contestant_id": "string",
     "client_timestamp": "string",
     "meta": {
@@ -1572,13 +1580,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
 
 ---
 
-PS: Be careful to not confuse problem with explanation.
-<BR/>Recommended reading: http://diego-pacheco.blogspot.com/2023/07/tradeoffs.html
-
-### 🌏 6. For each key major component
-
-What is a majore component? A service, a lambda, a important ui, a generalized approach for all uis, a generazid approach for computing a workload, etc...
-
 ## 6.1 - Class Diagram
 
 @startuml
@@ -1593,7 +1594,7 @@ BLOCKED
 DELETED
 }
 
-enum EventStatus {
+enum ElectionStatus {
 DRAFT
 OPEN
 CLOSED
@@ -1618,22 +1619,22 @@ class User {
 + isActive(): boolean
   }
 
-class Event {
+class Election {
 - id: UUID
 - name: String
 - createdBy: UUID
-- status: EventStatus
+- status: ElectionStatus
 - createdAt: Instant
 
 + addContestant(contestant: Contestant): void
-+ changeStatus(status: EventStatus): void
-+ createEvent(userId: UUID, name: String): void
++ changeStatus(status: ElectionStatus): void
++ createElection(userId: UUID, name: String): void
   }
 
 class Vote {
 - id: UUID
 - userId: UUID
-- eventId: UUID
+- electionId: UUID
 - contestantId: UUID
 - createdAt: Instant
 - deviceId: String
@@ -1642,14 +1643,14 @@ class Vote {
 
 class Contestant {
 - id: UUID
-- eventId: UUID
+- electionId: UUID
 - name: String
 - description: String
 - createdAt: Instant
   }
 
 class VoteCounter {
-- eventId: UUID
+- electionId: UUID
 - contestantId: UUID
 - totalVotes: Long
 
@@ -1674,11 +1675,11 @@ class AuthService {
 + validateToken(token: String): UUID
   }
 
-class EventService {
-+ createEvent(userId: UUID, name:String, contestants: List<Contestant>): Event
-+ getEvent(eventId: UUID): Event
-+ getListContestants(eventId: UUID): List<Contestant>
-+ getLeaderboard(eventId: UUID): List<VoteCounter>
+class ElectionService {
++ createElection(userId: UUID, name:String, contestants: List<Contestant>): Election
++ getElection(electionId: UUID): Election
++ getListContestants(electionId: UUID): List<Contestant>
++ getLeaderboard(electionId: UUID): List<VoteCounter>
   }
 
 
@@ -1687,11 +1688,13 @@ class EventService {
 ' =========================
 
 User "1" --> "*" Vote
-User "1" --> "*" Event : createEvent
-Event "1" --> "*" Vote
-Event "1" --> "*" Contestant
+User "1" --> "*" Election : createElection
+Election "1" --> "*" Vote
+Election "1" --> "*" Contestant
 Vote "*" --> "*" Contestant
 Contestant "1" --> "1" VoteCounter
+
+
 
 @enduml
 
