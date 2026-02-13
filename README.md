@@ -1051,19 +1051,37 @@ Tradeoffs:
 
 ## Flutter vs Native
 
+Flutter
+
 ```
 PROS (+)
-  * One Codebase: Streamlines maintenance and ensures feature parity across iOS and Android.
-  * Near Native Performance: Compiled to ARM/Machine code for high-speed execution.
-  * Consistent UI: Pixel-perfect rendering across all devices via the Skia/Impeller engines.
-  * Security Access: Direct integration with Secure Enclave (iOS) and Keystore (Android).
-  * Realtime Ready: Native-level support for WebSockets, gRPC, and Streams.
+  * One Codebase: A single codebase targets iOS and Android, reducing maintenance effort and ensuring feature parity.
+  * Near‑Native Performance: Compiles to ARM/machine code, enabling high performance close to native apps.
+  * Consistent UI: Uses the Skia/Impeller rendering engines to deliver pixel‑perfect, uniform UI across devices and OS versions.
+  * Security Access: Supports integration with platform-level security features like Secure Enclave (iOS) and Keystore (Android).
+  * Realtime Ready: Strong support for WebSockets, Streams, and gRPC, ideal for realtime or data-driven apps.
 
 CONS (+)
-  * Engine Overhead: Larger binary sizes compared to pure native apps.
-  * Native Integration: Advanced features may require platform specific "Method Channels" (Swift/Kotlin).
-  * Ecosystem: Some niche libraries may be less mature than their native counterparts.
+  * Engine Overhead: App binaries are generally larger because of the bundled Flutter engine.
+  * Native Integration: Advanced or highly platform-specific functionalities may require Method Channels using Swift/Kotlin.
+  * Ecosystem Limitations: Certain niche or OS‑specific libraries may be less mature than their native equivalents.
 ```
+
+Native
+
+```
+PROS (+)
+  * Maximum Performance: Direct access to the OS and hardware results in the best possible execution speed and responsiveness.
+  * Deep Platform Integration: Full support for advanced APIs (ARKit, Metal, Jetpack, etc.) with no abstraction layer.
+  * Smallest Binary Footprint: No embedded engine leads to smaller application sizes.
+  * OS‑Aligned UI/UX: User interfaces automatically follow platform guidelines, animations, and accessibility standards.
+
+CONS (+)
+  * Two Codebases: iOS and Android require separate implementations, increasing maintenance costs and time to market.
+  * Slower Feature Parity: Releases may diverge if one platform receives updates sooner than the other.
+  * Higher Development Cost: Requires specialized skills in both ecosystems (Swift and Kotlin).
+```
+
 
 ## Computation Scale
 
