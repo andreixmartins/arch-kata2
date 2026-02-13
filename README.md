@@ -47,8 +47,6 @@ Here there will be a bunch of diagrams, to understand the solution.
 
 <img src="images/overall_diagram_simple_v2.png">
 
-
-
 # Model #1 - RDS Voter System Architecture Analysis - for 250K TPS
 
 ## Architecture Overview
@@ -64,6 +62,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 **Purpose**: Content delivery network and application firewall for DDoS protection and global distribution.
 
 #### Pros
+
 - Global edge locations reduce latency for distributed voters
 - WAF protects against Layer 7 attacks, SQL injection, XSS
 - Built-in DDoS protection with AWS Shield Standard (free)
@@ -72,6 +71,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 - Request filtering before reaching backend (saves compute costs)
 
 #### Cons
+
 - Adds ~50-100ms latency for cache misses
 - Additional cost for data transfer and requests
 - Cache invalidation complexity for real-time voting updates
@@ -79,6 +79,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 - Not suitable if all requests must hit backend (no caching benefit)
 
 #### Trade-offs
+
 - **Security vs Latency**: WAF inspection adds processing time but protects against attacks
 - **Cost vs Performance**: CloudFront costs can be high at 250K TPS but reduces origin load
 - **Caching vs Freshness**: Aggressive caching saves costs but may serve stale data
@@ -144,6 +145,7 @@ Resources:
 **Purpose**: High-performance Layer 4 load balancer for distributing traffic to EKS nodes.
 
 #### Pros
+
 - Handles millions of requests per second with ultra-low latency (<100μs)
 - Preserves source IP address for accurate voter tracking
 - Static IP addresses for DNS and whitelist configurations
@@ -152,6 +154,7 @@ Resources:
 - Lower cost than ALB for high throughput
 
 #### Cons
+
 - No Layer 7 features (no HTTP routing, headers, cookies)
 - No native WAF integration (must use CloudFront WAF)
 - Limited health check options compared to ALB
@@ -159,6 +162,7 @@ Resources:
 - No built-in authentication (OAuth, Cognito)
 
 #### Trade-offs
+
 - **Performance vs Features**: NLB is faster but lacks ALB's Layer 7 capabilities
 - **Cost vs Throughput**: At 250K TPS, NLB is more cost-effective than ALB
 - **Simplicity vs Flexibility**: Connection-based routing is simpler but less flexible
@@ -218,6 +222,7 @@ Resources:
 **Purpose**: Container orchestration for running voter application microservices with high availability.
 
 #### Pros
+
 - Managed Kubernetes with automatic updates and patching
 - Multi-AZ deployment ensures high availability
 - Auto-scaling (HPA and Cluster Autoscaler) handles traffic spikes
@@ -227,6 +232,7 @@ Resources:
 - 50 pods per node = efficient resource utilization
 
 #### Cons
+
 - Complexity: Kubernetes has steep learning curve
 - Cost: Control plane costs $0.10/hour ($73/month) per cluster
 - Over-provisioning: 150 pods may be excessive for some workloads
@@ -235,6 +241,7 @@ Resources:
 - Startup time slower than serverless alternatives (Lambda)
 
 #### Trade-offs
+
 - **Flexibility vs Simplicity**: EKS offers container flexibility but adds operational complexity
 - **Cost vs Control**: More expensive than Fargate but allows fine-grained node control
 - **Scalability vs Overhead**: Powerful scaling but requires careful resource management
@@ -258,7 +265,7 @@ iam:
 
 managedNodeGroups:
   - name: voter-ng-az1
-    instanceType: m5.2xlarge  # 8 vCPU, 32GB RAM
+    instanceType: m5.2xlarge # 8 vCPU, 32GB RAM
     minSize: 1
     maxSize: 5
     desiredCapacity: 1
@@ -307,7 +314,8 @@ addons:
 
 cloudWatch:
   clusterLogging:
-    enableTypes: ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+    enableTypes:
+      ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 ```
 
 ```yaml
@@ -318,7 +326,7 @@ metadata:
   name: voter-app
   namespace: voting
 spec:
-  replicas: 150  # 50 pods per node across 3 nodes
+  replicas: 150 # 50 pods per node across 3 nodes
   selector:
     matchLabels:
       app: voter
@@ -399,6 +407,7 @@ spec:
 ```
 
 **Cost Estimate**:
+
 - Control plane: $73/month
 - 3 x m5.2xlarge nodes: ~$1,850/month (3 x $0.384/hour x 730 hours)
 - **Total**: ~$1,923/month (base configuration)
@@ -410,6 +419,7 @@ spec:
 **Purpose**: Event streaming platform for asynchronous vote processing and decoupling producers from consumers.
 
 #### Pros
+
 - Fully managed Kafka (no ZooKeeper management in MSK 2.8+)
 - High throughput: Each broker handles 40MB/s ingress, 60MB/s egress
 - 100 partitions enable massive parallelism for consumers
@@ -419,6 +429,7 @@ spec:
 - Decouples API layer from database writes (async processing)
 
 #### Cons
+
 - Cost: MSK is expensive (~$200/month per broker, minimum 3 brokers)
 - Complexity: Requires Kafka expertise for tuning (partitions, retention, compression)
 - Latency: Async processing adds delay (not suitable for real-time consistency)
@@ -427,6 +438,7 @@ spec:
 - No serverless option (must provision broker capacity)
 
 #### Trade-offs
+
 - **Throughput vs Cost**: 100 partitions provide massive throughput but require more brokers
 - **Async vs Sync**: Event-driven architecture improves scalability but adds eventual consistency
 - **Durability vs Storage**: Longer retention periods increase storage costs
@@ -443,7 +455,7 @@ Resources:
       KafkaVersion: "3.5.1"
       NumberOfBrokerNodes: 3
       BrokerNodeGroupInfo:
-        InstanceType: kafka.m5.xlarge  # 4 vCPU, 16GB RAM
+        InstanceType: kafka.m5.xlarge # 4 vCPU, 16GB RAM
         ClientSubnets:
           - !Ref PrivateSubnetAZ1
           - !Ref PrivateSubnetAZ2
@@ -452,10 +464,10 @@ Resources:
           - !Ref MSKSecurityGroup
         StorageInfo:
           EBSStorageInfo:
-            VolumeSize: 1000  # 1TB per broker
+            VolumeSize: 1000 # 1TB per broker
             ProvisionedThroughput:
               Enabled: true
-              VolumeThroughput: 250  # MB/s
+              VolumeThroughput: 250 # MB/s
       EncryptionInfo:
         EncryptionInTransit:
           ClientBroker: TLS
@@ -490,7 +502,6 @@ Resources:
         message.max.bytes=1048576
 ```
 
-
 **Cost Estimate**: ~$1,650/month (3 x kafka.m5.xlarge brokers + storage)
 
 ---
@@ -500,6 +511,7 @@ Resources:
 **Purpose**: Distributed in-memory cache for read-heavy operations and session management.
 
 #### Pros
+
 - Sub-millisecond latency for reads (reduces Aurora load by 80-90%)
 - 15 shards enable horizontal scaling to ~750GB memory
 - Cluster mode provides automatic sharding and replication
@@ -509,6 +521,7 @@ Resources:
 - Reduces database costs by caching frequent queries
 
 #### Cons
+
 - Cost: ElastiCache is expensive (~$150-300/node depending on instance type)
 - Cache invalidation complexity (requires careful strategy)
 - Cold start: Empty cache leads to "thundering herd" on database
@@ -517,6 +530,7 @@ Resources:
 - Network overhead for cluster mode vs single node
 
 #### Trade-offs
+
 - **Performance vs Cost**: In-memory speed is expensive at scale
 - **Consistency vs Availability**: Cache can serve stale data during invalidation
 - **Sharding vs Simplicity**: 15 shards improve throughput but increase operational complexity
@@ -533,9 +547,9 @@ Resources:
       ReplicationGroupDescription: Voter session and result cache
       Engine: redis
       EngineVersion: "7.0"
-      CacheNodeType: cache.r6g.xlarge  # 4 vCPU, 26.32 GB RAM
-      NumNodeGroups: 15  # 15 shards
-      ReplicasPerNodeGroup: 2  # 2 read replicas per shard
+      CacheNodeType: cache.r6g.xlarge # 4 vCPU, 26.32 GB RAM
+      NumNodeGroups: 15 # 15 shards
+      ReplicasPerNodeGroup: 2 # 2 read replicas per shard
       AutomaticFailoverEnabled: true
       MultiAZEnabled: true
       CacheSubnetGroupName: !Ref CacheSubnetGroup
@@ -569,6 +583,7 @@ Resources:
 **Purpose**: Dedicated consumer pods for processing Kafka messages and writing to Aurora.
 
 #### Pros
+
 - Separation of concerns: Decouples API layer from write processing
 - 50 consumers can process 100 partitions with 2 partitions per consumer
 - Batch processing improves database write throughput (bulk inserts)
@@ -577,6 +592,7 @@ Resources:
 - Enables complex event processing (aggregations, enrichment)
 
 #### Cons
+
 - Additional infrastructure cost (separate EKS deployment)
 - Increased complexity with two EKS clusters/deployments
 - Consumer lag monitoring required
@@ -584,6 +600,7 @@ Resources:
 - 50 pods may be over-provisioned or under-provisioned depending on throughput
 
 #### Trade-offs
+
 - **Throughput vs Latency**: Batch processing improves throughput but adds delay
 - **Parallelism vs Overhead**: More consumers increase throughput but add coordination overhead
 - **Resilience vs Complexity**: Consumer group management adds complexity but improves fault tolerance
@@ -598,7 +615,7 @@ metadata:
   name: voter-consumer
   namespace: voting
 spec:
-  replicas: 50  # 50 consumer pods
+  replicas: 50 # 50 consumer pods
   selector:
     matchLabels:
       app: voter-consumer
@@ -634,7 +651,6 @@ spec:
               value: "1000"
 ```
 
-
 **Cost Estimate**: Included in EKS cluster cost (uses same cluster, different deployment)
 
 ---
@@ -644,6 +660,7 @@ spec:
 **Purpose**: Multi-master database configuration for distributed writes and eliminating write bottlenecks.
 
 #### Pros
+
 - **True active-active**: Both writers accept writes simultaneously (no primary/replica)
 - Eliminates single-writer bottleneck (can handle 2x write throughput)
 - Sharding (0-49, 50-99) enables horizontal write scaling
@@ -653,6 +670,7 @@ spec:
 - Storage auto-scales up to 128TB per cluster
 
 #### Cons
+
 - **Cost**: Multi-Master is 2x cost of single-writer Aurora
 - **Conflict resolution**: Application must handle write conflicts (last-write-wins)
 - Complexity: Requires application-level shard routing logic
@@ -662,6 +680,7 @@ spec:
 - Write conflicts can cause transaction retries
 
 #### Trade-offs
+
 - **Write Throughput vs Complexity**: Multi-Master scales writes but requires conflict handling
 - **Availability vs Cost**: Active-active provides better uptime but doubles database cost
 - **Sharding vs Operational Overhead**: Manual sharding improves scalability but adds routing logic
@@ -696,7 +715,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       DBClusterIdentifier: !Ref AuroraMultiMasterCluster
-      DBInstanceClass: db.r6g.4xlarge  # 16 vCPU, 128GB RAM
+      DBInstanceClass: db.r6g.4xlarge # 16 vCPU, 128GB RAM
       Engine: aurora-postgresql
       PubliclyAccessible: false
       AvailabilityZone: us-east-1a
@@ -718,7 +737,6 @@ Resources:
           Value: "50-99"
 ```
 
-
 **Cost Estimate**: ~$4,160/month (2 x db.r6g.4xlarge at $1.44/hour x 730 hours + storage)
 
 ---
@@ -728,6 +746,7 @@ Resources:
 **Purpose**: Scale read operations horizontally to handle 250K TPS read queries without impacting writers.
 
 #### Pros
+
 - 15 read replicas distribute query load (each handles ~16.6K TPS)
 - Sub-10ms replication lag from multi-master writers
 - Automatic failover promotion if writer fails
@@ -737,6 +756,7 @@ Resources:
 - Cross-region read replicas for disaster recovery
 
 #### Cons
+
 - Cost: 15 replicas at db.r6g.4xlarge = ~$31,200/month
 - Eventual consistency: Replication lag can serve stale data (1-10ms typical)
 - Storage costs shared across cluster (but I/O costs per replica)
@@ -744,6 +764,7 @@ Resources:
 - Connection management complexity (requires connection pooling)
 
 #### Trade-offs
+
 - **Read Scalability vs Cost**: More replicas improve read performance but scale linearly in cost
 - **Consistency vs Performance**: Replicas provide eventual consistency, not strong consistency
 - **Availability vs Complexity**: More replicas improve fault tolerance but complicate connection routing
@@ -777,7 +798,6 @@ Resources:
       EndpointType: READER
 ```
 
-
 **Cost Estimate**: ~$31,200/month (15 x db.r6g.4xlarge at $1.44/hour x 730 hours)
 
 ---
@@ -787,6 +807,7 @@ Resources:
 **Purpose**: Long-term archival storage for vote audit trail and compliance.
 
 #### Pros
+
 - Extremely low cost: $0.004/GB/month (99% cheaper than S3 Standard)
 - Durability: 99.999999999% (11 nines)
 - Compliance: Immutable storage with Object Lock (WORM)
@@ -795,6 +816,7 @@ Resources:
 - Integrated with AWS Audit Manager for compliance frameworks
 
 #### Cons
+
 - Retrieval latency: 1-12 hours for standard retrieval
 - Retrieval cost: $0.01-0.03/GB depending on speed
 - Minimum storage duration: 90 days (early deletion fees)
@@ -802,6 +824,7 @@ Resources:
 - Bulk retrievals only practical for large investigations
 
 #### Trade-offs
+
 - **Cost vs Access Speed**: Glacier is cheap but slow to retrieve
 - **Compliance vs Operational Flexibility**: Immutability ensures compliance but prevents modifications
 - **Storage Duration vs Flexibility**: 90-day minimum commitment
@@ -845,9 +868,8 @@ Resources:
         Rule:
           DefaultRetention:
             Mode: COMPLIANCE
-            Years: 7  # 7-year retention for compliance
+            Years: 7 # 7-year retention for compliance
 ```
-
 
 **Cost Estimate**: ~$40-100/month (10TB/year at $0.004/GB/month)
 
@@ -858,6 +880,7 @@ Resources:
 **Purpose**: Comprehensive monitoring, logging, and distributed tracing for observability.
 
 #### Pros
+
 - **CloudWatch**: Centralized logs, metrics, and alarms for all AWS services
 - **X-Ray**: End-to-end request tracing across EKS, MSK, Aurora
 - Real-time dashboards for TPS, latency, error rates
@@ -867,6 +890,7 @@ Resources:
 - Retention policies to manage log storage costs
 
 #### Cons
+
 - Cost: CloudWatch Logs can be expensive at scale ($0.50/GB ingested)
 - X-Ray adds 5-10ms latency per traced request
 - Alert fatigue if alarms not tuned properly
@@ -874,6 +898,7 @@ Resources:
 - Log retention costs accumulate over time
 
 #### Trade-offs
+
 - **Observability vs Cost**: Detailed logging is expensive but critical for debugging
 - **Tracing Overhead vs Insights**: X-Ray adds latency but provides invaluable debugging data
 - **Retention vs Storage**: Longer retention improves forensics but increases costs
@@ -931,7 +956,7 @@ Resources:
       Statistic: Average
       Period: 300
       EvaluationPeriods: 2
-      Threshold: 1.0  # 1 second
+      Threshold: 1.0 # 1 second
       ComparisonOperator: GreaterThanThreshold
 ```
 
@@ -964,20 +989,20 @@ Resources:
 
 ## Monthly Cost Estimation
 
-| Component | Configuration | Monthly Cost |
-|-----------|--------------|--------------|
-| CloudFront + WAF | 648B requests/month | $3,500 |
-| Network Load Balancer | 3 AZs + LCUs | $250 |
-| EKS Control Plane | 1 cluster | $73 |
-| EKS Nodes | 3 x m5.2xlarge | $1,850 |
-| MSK Cluster | 3 x kafka.m5.xlarge | $1,650 |
-| ElastiCache Redis | 15 shards x 3 nodes (r6g.xlarge) | $6,750 |
-| Aurora Writers | 2 x db.r6g.4xlarge | $4,160 |
-| Aurora Read Replicas | 15 x db.r6g.4xlarge | $31,200 |
-| S3 Glacier | 10TB audit logs | $80 |
-| CloudWatch + X-Ray | Logs + traces | $750 |
-| Data Transfer | Inter-AZ and egress | $1,000 |
-| **Total Estimated Cost** | | **~$51,263/month** |
+| Component                | Configuration                    | Monthly Cost       |
+| ------------------------ | -------------------------------- | ------------------ |
+| CloudFront + WAF         | 648B requests/month              | $3,500             |
+| Network Load Balancer    | 3 AZs + LCUs                     | $250               |
+| EKS Control Plane        | 1 cluster                        | $73                |
+| EKS Nodes                | 3 x m5.2xlarge                   | $1,850             |
+| MSK Cluster              | 3 x kafka.m5.xlarge              | $1,650             |
+| ElastiCache Redis        | 15 shards x 3 nodes (r6g.xlarge) | $6,750             |
+| Aurora Writers           | 2 x db.r6g.4xlarge               | $4,160             |
+| Aurora Read Replicas     | 15 x db.r6g.4xlarge              | $31,200            |
+| S3 Glacier               | 10TB audit logs                  | $80                |
+| CloudWatch + X-Ray       | Logs + traces                    | $750               |
+| Data Transfer            | Inter-AZ and egress              | $1,000             |
+| **Total Estimated Cost** |                                  | **~$51,263/month** |
 
 ## Conclusion
 
@@ -986,7 +1011,6 @@ This architecture is **well-designed for extreme scale (250K TPS)** with excelle
 However, the **cost (~$51K/month) is substantial** and may be prohibitive for smaller organizations. The architecture also requires **significant operational expertise** in Kubernetes, Kafka, and distributed systems.
 
 For most use cases, a **phased approach** starting with smaller configurations and scaling based on actual traffic is recommended. Consider Aurora Serverless v2, fewer replicas, and smaller instance types initially to reduce costs by 50-65% while maintaining the architectural benefits.
-
 
 🗂️ 4.2 Deployment: Show the infra in a big picture.
 
@@ -1026,8 +1050,9 @@ Tradeoffs:
 ```
 
 ## Flutter vs Native
+
 ```
-PROS (+) 
+PROS (+)
   * One Codebase: Streamlines maintenance and ensures feature parity across iOS and Android.
   * Near Native Performance: Compiled to ARM/Machine code for high-speed execution.
   * Consistent UI: Pixel-perfect rendering across all devices via the Skia/Impeller engines.
@@ -1237,10 +1262,6 @@ CONS (-)
   * Querying: Complex relational queries and joins are not supported or require manual composition.
   * Auditability: Harder to guarantee deterministic, tamper-proof, append-only records.
 
-
-**Final Bottom Line**
-
-For a system where **one person must vote exactly once**, and where **data integrity is non-negotiable**, SQL is clearly superior.
 ```
 
 X-Ray x Jaeger
@@ -1346,7 +1367,6 @@ PS: Be careful to not confuse problem with explanation.
 ### 🌏 6. For each key major component
 
 What is a majore component? A service, a lambda, a important ui, a generalized approach for all uis, a generazid approach for computing a workload, etc...
-
 
 # Endpoints:
 
@@ -1606,6 +1626,7 @@ ARCHIVED
 ' =========================
 
 class User {
+
 - id: UUID
 - userName: String
 - email: String
@@ -1614,24 +1635,26 @@ class User {
 - createdAt: Instant
 - status: UserStatus
 
-+ authenticate(password: String): boolean
-+ changePassword(oldPassword: String, newPassword: String): void
-+ isActive(): boolean
+* authenticate(password: String): boolean
+* changePassword(oldPassword: String, newPassword: String): void
+* isActive(): boolean
   }
 
 class Election {
+
 - id: UUID
 - name: String
 - createdBy: UUID
 - status: ElectionStatus
 - createdAt: Instant
 
-+ addContestant(contestant: Contestant): void
-+ changeStatus(status: ElectionStatus): void
-+ createElection(userId: UUID, name: String): void
+* addContestant(contestant: Contestant): void
+* changeStatus(status: ElectionStatus): void
+* createElection(userId: UUID, name: String): void
   }
 
 class Vote {
+
 - id: UUID
 - userId: UUID
 - electionId: UUID
@@ -1642,6 +1665,7 @@ class Vote {
   }
 
 class Contestant {
+
 - id: UUID
 - electionId: UUID
 - name: String
@@ -1650,19 +1674,21 @@ class Contestant {
   }
 
 class VoteCounter {
+
 - electionId: UUID
 - contestantId: UUID
 - totalVotes: Long
 
-+ incrementVote(): void
+* incrementVote(): void
   }
 
 class Login {
+
 - token: String
 - userId: UUID
 
-+ isExpired(): boolean
-+ revoke(): void
+* isExpired(): boolean
+* revoke(): void
   }
 
 ' =========================
@@ -1670,31 +1696,30 @@ class Login {
 ' =========================
 
 class AuthService {
-+ login(username: String, password: String): AuthToken
-+ register(user: User): UUID
-+ validateToken(token: String): UUID
+
+- login(username: String, password: String): AuthToken
+- register(user: User): UUID
+- validateToken(token: String): UUID
   }
 
 class ElectionService {
-+ createElection(userId: UUID, name:String, contestants: List<Contestant>): Election
-+ getElection(electionId: UUID): Election
-+ getListContestants(electionId: UUID): List<Contestant>
-+ getLeaderboard(electionId: UUID): List<VoteCounter>
-  }
 
+- createElection(userId: UUID, name:String, contestants: List<Contestant>): Election
+- getElection(electionId: UUID): Election
+- getListContestants(electionId: UUID): List<Contestant>
+- getLeaderboard(electionId: UUID): List<VoteCounter>
+  }
 
 ' =========================
 ' RELATIONSHIPS
 ' =========================
 
-User "1" --> "*" Vote
-User "1" --> "*" Election : createElection
-Election "1" --> "*" Vote
-Election "1" --> "*" Contestant
-Vote "*" --> "*" Contestant
+User "1" --> "_" Vote
+User "1" --> "_" Election : createElection
+Election "1" --> "_" Vote
+Election "1" --> "_" Contestant
+Vote "_" --> "_" Contestant
 Contestant "1" --> "1" VoteCounter
-
-
 
 @enduml
 
@@ -2179,25 +2204,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/report/billing</span>
 | timestamp    | timestamptz | 8 bytes  | YES      | now()             | Vote submission time                                 |
 | receipt_hash | text        | var      | YES      |                   | Unique vote receipt                                  |
 | —            | UNIQUE      | —        | —        | —                 | (election_id, voter_id) enforces one vote per person |
-
-# Final Summary
-
-### **1. One real person → One global voter_id**
-
-Permanent for all elections.
-
-### **2. One vote per election**
-
-Enforced by `UNIQUE(election_id, voter_id)`.
-
-### **3. Minimal tables**
-
-Only 4 tables remain.
-
-### **4. Clean privacy boundaries**
-
-Personal data stays only in USERS.
-Voting data uses only `voter_id`.
 
 ---
 
