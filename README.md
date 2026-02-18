@@ -28,6 +28,9 @@ Example:
 
 - No monolith: We won't build one giant block of software. We will break it into small pieces so it's easier to manage.
 - No mainframes: We wont use mainframe computers or keep servers in our own office. We will use Cloud (AWS).
+- No Heavy Business Logic: The app won't calculate totals or validate global vote limits; it remains a "thin client" focused on UI and local input validation.
+- No Local Truth: Local storage (Hive/SharedPrefs) will not be the source of truth for a "successful vote"—only the server's signed acknowledgment counts.
+- No Custom Cryptography: We won’t build our own encryption algorithms; we will strictly use platform-standard Secure Enclave (iOS) and Keystore (Android).
 
 Recommended Reading: http://diego-pacheco.blogspot.com/2021/01/requirements-are-dangerous.html
 
@@ -36,6 +39,10 @@ Recommended Reading: http://diego-pacheco.blogspot.com/2021/01/requirements-are-
 List in form of bullets what design principles you want to be followed, it's great to have 5-10 lines.
 
 1 - Event-Driven Architecture: Use asynchronous ingestion via a message broker (kafka/sqs) to decouple high-velocity writes from processing.
+2 - Optimistic UI Updates: Provide the user with immediate visual confirmation of their vote while the actual sync happens asynchronously in the background.
+3 - Reactive State Management: Use BLoC or Signals to ensure the UI reacts instantly to backend streams without unnecessary full-screen rebuilds.
+4 - Hardware-Backed Security: Leverage Native Channels to access biometric hardware, ensuring the "one-person-one-vote" rule is tied to the physical device.
+5 - Graceful Degradation: If the network is congested, the app should automatically disable heavy animations and simplify the UI to prioritize the voting action.
 
 Recommended Reading: http://diego-pacheco.blogspot.com/2018/01/stability-principles.html
 
@@ -54,6 +61,7 @@ Here there will be a bunch of diagrams, to understand the solution.
 This architecture is designed to handle a high-throughput voter system capable of processing **250,000 transactions per second (TPS)**. The design uses a modern AWS stack with event-driven architecture, distributed caching, and multi-master database configuration.
 
 <img src="images/model1-rds.png">
+<img src="images/use-case.png">
 
 ## Component Analysis
 
@@ -1254,6 +1262,18 @@ Explain the techniques, principles, types of tests and will be performaned, and 
 - Security testing – Tests the software to identify vulnerabilities and ensure it meets security requirements.
 - Usability testing – Tests the software to evaluate its user-friendliness and ease of use.
 
+### Frontend Testing Strategy
+- **Unit Testing:** Validates business logic and state managers (BLoCs/Providers) to ensure vote processing and local validation logic are mathematically sound.
+- **Widget Testing:** Verifies individual UI components (buttons, input fields) in isolation to ensure they render correctly and respond to user interactions without a full app boot.
+- **Integration Testing:** Executes end-to-end flows on physical devices to test the handshake between Flutter and Native modules (Biometrics/Secure Storage).
+- **Performance Testing:** Uses Flutter DevTools to profile frame rates (FPS) and memory usage, ensuring no "jank" occurs when processing real-time results at 250k/sec.
+- **Security Testing:** Focuses on the OAuth2/PKCE flow and ensures that biometric data is never stored locally and that the "one-vote-per-user" lock cannot be bypassed.
+- **Usability Testing:** Leverages Flutter’s Semantics and accessibility tools to ensure the voting interface is clear and usable for all users under the pressure of a live event.
+- **Mocking Data:** We use Mockito or Mocktail to stub API responses, simulating "success," "conflict" (already voted), and "unauthorized" scenarios without hitting live servers.
+- **Stress Testing:** We perform "UI Load Testing" by bombarding the app’s state management with high-frequency stream updates to verify the UI remains responsive and doesn't crash from over-rendering.
+- **Chaos Goals:** Purposefully inject network latency (up to 2000ms) or 50% packet loss via proxy tools to test the app's retry logic and "Offline Mode" indicators.
+- **Assumptions:** We assume users will have varying network quality; the frontend must prioritize an "Optimistic UI" (showing local success immediately) while the vote syncs in the background.
+
 ### 🖹 9. Observability strategy
 
 Explain the techniques, principles,types of observability that will be used, key metrics, what would be logged and how to design proper dashboards and alerts.
@@ -1339,3 +1359,7 @@ Describe your stack, what databases would be used, what servers, what kind of co
 - Relational DB Patterns https://www.geeksforgeeks.org/design-patterns-for-relational-databases/
 - Rendering Patterns https://www.patterns.dev/vanilla/rendering-patterns/
 - REST API Design https://blog.stoplight.io/api-design-patterns-for-rest-web-services
+- Flutter vs Native Cost and Performance https://devdiligent.com/blog/flutter-vs-native-apps-2026/
+- Why Flutter outperforms competitors https://foresightmobile.com/blog/why-flutter-outperforms-the-competition
+- Flutter test guide https://docs.flutter.dev/testing
+- Flutter clean architecture guide https://medium.com/@suryawanshisuraj2681/flutter-naming-conventions-and-best-practices-for-clean-architecture-8a1ba9033c5d
