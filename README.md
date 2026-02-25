@@ -91,7 +91,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 - **Security vs Latency**: WAF inspection adds processing time but protects against attacks
 - **Cost vs Performance**: CloudFront costs can be high at 250K TPS but reduces origin load
 - **Caching vs Freshness**: Aggressive caching saves costs but may serve stale data
-**Cost Estimate**: ~$2,000-5,000/month (250K requests/sec = 648B requests/month at $0.0075/10K requests + data transfer)
+  **Cost Estimate**: ~$2,000-5,000/month (250K requests/sec = 648B requests/month at $0.0075/10K requests + data transfer)
 
 ---
 
@@ -191,7 +191,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 - **Throughput vs Cost**: 100 partitions provide massive throughput but require more brokers
 - **Async vs Sync**: Event-driven architecture improves scalability but adds eventual consistency
 - **Durability vs Storage**: Longer retention periods increase storage costs
-**Cost Estimate**: ~$1,650/month (3 x kafka.m5.xlarge brokers + storage)
+  **Cost Estimate**: ~$1,650/month (3 x kafka.m5.xlarge brokers + storage)
 
 ---
 
@@ -223,7 +223,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 - **Performance vs Cost**: In-memory speed is expensive at scale
 - **Consistency vs Availability**: Cache can serve stale data during invalidation
 - **Sharding vs Simplicity**: 15 shards improve throughput but increase operational complexity
-**Cost Estimate**: ~$6,750/month (15 shards x 3 nodes x cache.r6g.xlarge at $0.308/hour)
+  **Cost Estimate**: ~$6,750/month (15 shards x 3 nodes x cache.r6g.xlarge at $0.308/hour)
 
 ---
 
@@ -253,7 +253,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 - **Throughput vs Latency**: Batch processing improves throughput but adds delay
 - **Parallelism vs Overhead**: More consumers increase throughput but add coordination overhead
 - **Resilience vs Complexity**: Consumer group management adds complexity but improves fault tolerance
-**Cost Estimate**: Included in EKS cluster cost (uses same cluster, different deployment)
+  **Cost Estimate**: Included in EKS cluster cost (uses same cluster, different deployment)
 
 ---
 
@@ -286,7 +286,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 - **Write Throughput vs Complexity**: Multi-Master scales writes but requires conflict handling
 - **Availability vs Cost**: Active-active provides better uptime but doubles database cost
 - **Sharding vs Operational Overhead**: Manual sharding improves scalability but adds routing logic
-**Cost Estimate**: ~$4,160/month (2 x db.r6g.4xlarge at $1.44/hour x 730 hours + storage)
+  **Cost Estimate**: ~$4,160/month (2 x db.r6g.4xlarge at $1.44/hour x 730 hours + storage)
 
 ---
 
@@ -380,7 +380,7 @@ This architecture is designed to handle a high-throughput voter system capable o
 - **Observability vs Cost**: Detailed logging is expensive but critical for debugging
 - **Tracing Overhead vs Insights**: X-Ray adds latency but provides invaluable debugging data
 - **Retention vs Storage**: Longer retention improves forensics but increases costs
-**Cost Estimate**: ~$500-1,000/month (CloudWatch Logs + X-Ray traces)
+  **Cost Estimate**: ~$500-1,000/month (CloudWatch Logs + X-Ray traces)
 
 ---
 
@@ -501,7 +501,6 @@ CONS (+)
   * Slower Feature Parity: Releases may diverge if one platform receives updates sooner than the other.
   * Higher Development Cost: Requires specialized skills in both ecosystems (Swift and Kotlin).
 ```
-
 
 ## Computation Scale
 
@@ -1040,7 +1039,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
 
 ## 6.1 - Class Diagram
 
-
 <img src="images/class_diagram_v2.png">
 
 ## 6.2 - Contract Documentation
@@ -1061,6 +1059,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
 | email            | text        | var      | NO       |                   | Optional contact    |
 | phone            | text        | var      | NO       |                   | Optional contact    |
 | created_at       | timestamptz | 8 bytes  | YES      | now()             | Creation timestamp  |
+| modified_at      | timestamptz | 8 bytes  | NO       |                   | Last modification   |
 
 ---
 
@@ -1072,6 +1071,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
 | user_id       | uuid        | 16 bytes | YES      |                   | FK → users(user_id)                    |
 | identity_hash | text        | var      | YES      |                   | Hashed real identity for deduplication |
 | created_at    | timestamptz | 8 bytes  | YES      | now()             | Creation timestamp                     |
+| modified_at   | timestamptz | 8 bytes  | NO       |                   | Last modification                      |
 
 ---
 
@@ -1084,6 +1084,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
 | status      | text        | var      | YES      |                   | draft, open, closed   |
 | starts_at   | timestamptz | 8 bytes  | NO       |                   | When voting starts    |
 | ends_at     | timestamptz | 8 bytes  | NO       |                   | When voting ends      |
+| modified_at | timestamptz | 8 bytes  | NO       |                   | Last modification     |
 
 ---
 
@@ -1097,6 +1098,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
 | vote_payload | jsonb       | var      | YES      |                   | Encrypted/anonymized ballot                          |
 | timestamp    | timestamptz | 8 bytes  | YES      | now()             | Vote submission time                                 |
 | receipt_hash | text        | var      | YES      |                   | Unique vote receipt                                  |
+| modified_at  | timestamptz | 8 bytes  | NO       |                   | Last modification                                    |
 | —            | UNIQUE      | —        | —        | —                 | (election_id, voter_id) enforces one vote per person |
 
 ---
@@ -1108,7 +1110,8 @@ CREATE TABLE reports (
     id SERIAL PRIMARY KEY, -- SERIAL to auto-increment as a primary key
     user_id STRING NOT NULL, -- UUID User id comming from Cassandra tables
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Date to inform when the report was generated
-    report_type VARCHAR(50) NOT NULL -- Column to inform the report type - BILLING, DOJOS, USERS
+    report_type VARCHAR(50) NOT NULL, -- Column to inform the report type - BILLING, DOJOS, USERS
+    modified_at TIMESTAMP -- Last modification timestamp
 );
 ```
 
@@ -1143,6 +1146,7 @@ Explain the techniques, principles, types of tests and will be performaned, and 
 - Usability testing – Tests the software to evaluate its user-friendliness and ease of use.
 
 ### Frontend Testing Strategy
+
 - **Unit Testing:** Validates business logic and state managers (BLoCs/Providers) to ensure vote processing and local validation logic are mathematically sound.
 - **Widget Testing:** Verifies individual UI components (buttons, input fields) in isolation to ensure they render correctly and respond to user interactions without a full app boot.
 - **Integration Testing:** Executes end-to-end flows on physical devices to test the handshake between Flutter and Native modules (Biometrics/Secure Storage).
