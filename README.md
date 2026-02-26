@@ -810,16 +810,21 @@ What is a majore component? A service, a lambda, a important ui, a generalized a
 ### <span style='color:#3BC143 ;font-weight: bold;'>AUTHENTICATION</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/login</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/oauth</span>
 
-- User authentication endpoint usually used to identify the current user session and fetch user data. Response must return the user_id and user token.
-  1. username and password are required fields
+- User authentication endpoint usually used to identify the current user session and fetch user data. 
+Response must return the user_id, access_token, refresh_token, expires_in and token_type.
+
+  1. provider and provider_token are required fields
+  2. Response code success must be 200 OK.
+  3. Response code failure for invalid token must be 401 Unauthorized.
+  
   - request
 
   ```json
   {
-    "username": "string",
-    "password": "string"
+    "provider": "string",
+    "provider_token": "string"
   }
   ```
 
@@ -828,37 +833,29 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/login</span>
   ```json
   {
     "user_id": "string",
-    "token": "string"
+    "access_token": "string",
+    "refresh_token": "string",
+    "expires_in": "Integer",
+    "token_type": "string"
   }
   ```
 
-### <span style='color:#3BC143 ;font-weight: bold;'>REGISTRATION</span>
+### <span style='color:#3BC143 ;font-weight: bold;'>REFRESH TOKEN</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/register</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/refresh</span>
 
-- User registration endpoint used to create a new user in the system. Response must return the user_id.
-  1. Authorization header with Bearer token is required
-  2. Fields username, password, email and date_of_birth are required
-  3. Response code success must be 201 Created
-  4. Response code failure for invalid fields must be 400 Bad Request
-  5. Response code failure for unauthorized must be 401 Unauthorized
-  - headers
+- This endpoint issues a new access token when the current access token expires.
+  The client must provide a valid refresh token previously issued during authentication.
 
-  ```json
-  {
-    "Authorization": "Bearer token"
-  }
-  ```
-
+  1. refresh_token is required.
+  2. Response code success must be 200 OK.
+  3. Response code failure for invalid token must be 401 Unauthorized.
   - request
 
   ```json
   {
-    "username": "string",
-    "password": "string",
-    "email": "string",
-    "date_of_birth": "string"
+    "refresh_token": "string"
   }
   ```
 
@@ -866,26 +863,31 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/register</span>
 
   ```json
   {
-    "user_id": "string"
+    "access_token": "string",
+    "expires_in": "string",
+    "token_type": "string"
   }
   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>CREATE ELECTION</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/create</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections</span>
 
-- Endpoint to create a new voting election. Response must return the election_id, election_name and the list of contestants created.
-  1. Authorization header with Bearer token is required
-  2. Fields user_id, election_name, contestants, contestant_name, contestant_description, contestant_image_url are required
+- Endpoint to create a new voting election.
+
+  1. Authorization header with valid Bearer token is required.
+  2. Fields: name, starts_at, ends_at, and at least one contestant are required.
   3. Response code success must be 201 Created
   4. Response code failure for invalid fields must be 400 Bad Request
   5. Response code failure for unauthorized must be 401 Unauthorized
+  6. Response code failure for forbidden operation must be 403 Forbidden.
+  
   - headers
 
   ```json
   {
-    "Authorization": "Bearer token"
+    "Authorization": "Bearer access_token"
   }
   ```
 
@@ -893,13 +895,14 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/create</span>
 
   ```json
   {
-    "user_id": "string",
-    "election_name": "string",
+    "name": "string",
+    "starts_at": "string",
+    "ends_at": "string",
     "contestants": [
       {
-        "contestant_name": "string",
-        "contestant_description": "string",
-        "contestant_image_url": "string"
+        "name": "string",
+        "description": "string",
+        "image_url": "string"
       }
     ]
   }
@@ -910,11 +913,41 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/create</span>
   ```json
   {
     "election_id": "string",
-    "election_name": "string",
+    "name": "string",
+    "status": "string",
+    "starts_at": "string",
+    "ends_at": "string",
     "contestants": [
       {
         "contestant_id": "string",
-        "contestant_name": "string"
+        "name": "string"
+      }
+    ]
+  }
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>LIST ELECTIONS</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=open</span>
+- Endpoint used to retrieve a list of elections available in the system.
+  The results can be filtered by election status (open, closed).
+  
+  1. Status must be one of (open, closed).
+  2. Response code success must be 200 OK.
+  3. Response code failure for invalid query parameter must be 400 Bad Request.
+
+- response
+
+  ```json
+  {
+    "elections": [
+      {
+        "election_id": "string",
+        "name": "string",
+        "status": "string",
+        "starts_at": "string",
+        "ends_at": "string"
       }
     ]
   }
@@ -923,34 +956,28 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/create</span>
 ### <span style='color:#3BC143 ;font-weight: bold;'>GET ELECTION LEADERBOARD</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}/leaderboard</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/leaderboard</span>
 
-- Endpoint to get the leaderboard of a given election. Response must return the election_id, election_name and the list of contestants with their total votes.
-  1. Authorization header with Bearer token is required
-  2. Field election_id is required
-  3. Response code success must be 200 OK
-  4. Response code failure for invalid fields must be 400 Bad Request
-  5. Response code failure for unauthorized must be 401 Unauthorized
-  6. Response code failure election_id not found must be 404 Not Found
-  - headers
+- Endpoint to get the leaderboard of a given election.
 
-  ```json
-  {
-    "Authorization": "Bearer token"
-  }
-  ```
+  1. election_id path parameter is required.
+  2. Response code success must be 200 OK
+  3. Response code failure for election not found must be 404 Not Found.
 
   - response
 
   ```json
   {
     "election_id": "string",
-    "election_name": "string",
-    "contestants": [
+    "name": "string",
+    "status": "string",
+    "last_updated_at": "String",
+    "leaderboard": [
       {
         "contestant_id": "string",
-        "contestant_name": "string",
-        "total_votes": "Integer"
+        "name": "string",
+        "total_votes": "Integer",
+        "percentage": "Number"
       }
     ]
   }
@@ -959,33 +986,30 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}/l
 ### <span style='color:#3BC143 ;font-weight: bold;'>GET CONTESTANTS LIST</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{election_id}</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/contestants</span>
 
-- Endpoint to get the list of contestants for a given election. Response must return the election_id and the list of contestants.
-  1. Authorization header with Bearer token is required
-  2. Url parameter field election_id is required
-  3. Response code success must be 200 OK
-  4. Response code failure for invalid fields must be 400 Bad Request
-  5. Response code failure for unauthorized must be 401 Unauthorized
-  6. Response code failure for election_id not found must be 404 Not Found
-  - headers
+- Endpoint to get the list of contestants for a given election. 
 
-  ```json
-  {
-    "Authorization": "Bearer token"
-  }
-  ```
+  1. election_id path parameter is required.
+  2. Response code success must be 200 OK.
+  3. Response code failure for invalid election_id format must be 400 Bad Request.
+  4. Response code failure for election not found must be 404 Not Found.
 
   - response
 
   ```json
   {
     "election_id": "string",
+    "name": "string",
+    "status": "string",
+    "starts_at": "string",
+    "ends_at": "string",
     "contestants": [
       {
         "contestant_id": "string",
-        "contestant_name": "string",
-        "contestant_image_url": "string"
+        "name": "string",
+        "description": "string",
+        "image_url": "string"
       }
     ]
   }
@@ -994,52 +1018,59 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/contestants/{election_id
 ### <span style='color:#3BC143 ;font-weight: bold;'>SUBMIT A VOTE</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/vote/submit</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/votes</span>
 
-- Endpoint to submit a vote for a given election. Response must return the vote_id.
-  1. Authorization header with Bearer token is required
-  2. Fields user_id, election_id, contestant_id are required
-  3. Response code success must be 200 OK
-  4. Response code failure for invalid fields must be 400 Bad Request
-  5. Response code failure for unauthorized must be 401 Unauthorized
-  6. Response code failure for contestant_id and/or election_id not found must be 404 Not Found
-  7. Response code failure for duplicate vote must be 409 Conflict
-  - headers
+- Endpoint to submit a vote for a given election.
 
-  ```json
-  {
-    "Authorization": "Bearer token"
-  }
-  ```
+  1. Authorization header with valid Bearer token is required.
+  2. Idempotency-Key header is required.
+  3. ballot is required.
+  4. The election must be in open status.
+  5. A user can submit only one vote per election.
+  6. Response code success must be 201 Created.
+  7. Response code failure for invalid request body must be 400 Bad Request.
+  8. Response code failure for unauthorized access must be 401 Unauthorized.
+  9. Response code failure for election closed must be 403 Forbidden.
+  10. Response code failure for duplicate vote must be 409 Conflict.
+  
+   - headers
 
-  - request
+   ```json
+   {
+     "Authorization": "Bearer access_token",
+     "Idempotency-Key": "string"
+   }
+   ```
 
-  ```json
-  {
-    "user_id": "string",
-    "election_id": "string",
-    "contestant_id": "string",
-    "client_timestamp": "string",
-    "meta": {
-      "device_id": "string",
-      "app_version": "string"
-    }
-  }
-  ```
+   - request
 
-  - response
+   ```json
+   {
+     "ballot": {
+       "contestant_id": "string"
+     },
+     "client_timestamp": "string",
+     "meta": {
+       "device_id": "string",
+       "app_version": "string"
+     }
+   }
+   ```
 
-  ```json
-  {
-    "vote_id": "string"
-  }
-  ```
+   - response
+
+   ```json
+   {
+     "vote_id": "string",
+     "submited_at": "string"
+   }
+   ```
 
 ---
 
 ## 6.1 - Class Diagram
 
-<img src="images/class_diagram_v2.png">
+<img src="images/class_diagram_v3.png">
 
 ## 6.2 - Contract Documentation
 
