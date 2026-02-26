@@ -4,11 +4,15 @@
 
 ### 1. 🎯 Problem Statement and Context
 
-What is the problem? What is the context of the problem?
+Build a voting system for a huge tv show or event where 300 Million people might use it. Voting system cannot crash, lose votes, real time results, consistent 
 
-We need to build a voting system for a huge tv show or event where 300 Million people might use it. At the busiest moment, 250K people will vote every single second.The system cannot crash, cannot lose a single vote, and must show the results instantly when request, one person, one vote. No cheaters should be allowed.
+1. Realtime voting
+2. 250.000 request per second
+3. Secure against bots, hackers
+4. Availability, Realibility
+5. Request one vote per person
+6. Realtime results
 
-Recomended Reading: http://diego-pacheco.blogspot.com/2021/10/breaking-problems-down.html
 
 ### 2. 🎯 Goals
 
