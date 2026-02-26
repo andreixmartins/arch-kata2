@@ -1206,38 +1206,6 @@ For each different kind of data store i.e (Postgres, Memcached, Elasticache, S3,
 - AWS Elastic cache for caching data
 - AWS Keyspaces (Apache Cassandra)
 
-### **AWS Keyspaces (Cassandra) Queries**
-
-- Find user
-
-```sql
-SELECT id, username, firstname, lastname, email, age, created, updated FROM app.user where id = ?;
-```
-
-- Find poc by name
-
-```sql
-SELECT id, name, language, description, favorite, tags FROM app.pocuser where userid = ? and name = ?;
-```
-
-- Find poc by language
-
-```sql
-SELECT id, name, language, description, favorite, tags FROM app.pocuser where userid = ? and language = ?;
-```
-
-- Find poc by tag
-
-```sql
-SELECT id, name, language, description, favorite, tags FROM app.pocuser where userid = ? and tag = ?;
-```
-
-- Find room by user, userid and created date
-
-```sql
-select currentDate(), dateof(now()), id, userid, name, created from app.room where userid = ? AND created >= ? - 1d;
-```
-
 ### 🖹 11. Technology Stack
 
 Describe your stack, what databases would be used, what servers, what kind of components, mobile/ui approach, general architecture components, frameworks and libs to be used or not be used and why.
@@ -1257,7 +1225,6 @@ Describe your stack, what databases would be used, what servers, what kind of co
 - Monitoring: Prometheus + Grafana
 - Logging: Loki
 - Tracing: Xray
-- Realtime video - NodeJS + WebRTC
 
 ### 🖹 12. References
 
