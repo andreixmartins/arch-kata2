@@ -1053,6 +1053,126 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/
    }
    ```
 
+### <span style='color:#3BC143 ;font-weight: bold;'>Hydra - OAuth flow</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/admin/clients</span>
+
+- Grants our application access (called only once)
+
+   - headers
+
+   ```json
+   {
+     "Content-Type": "Application/json"
+   }
+   ```  
+  - request
+
+   ```json
+   {
+     "client_id": "voter-app",
+     "grant_types": ["authorization_code","refresh_token"],
+     "response_types": ["code"],
+     "scope": "openid profile email vote:cast offline_access",
+     "redirect_uris": ["http://localhost:3001/auth/exchange"],
+     "token_endpoint_auth_method": "none"
+   }
+   ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - register flow calls</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/registration/api</span>
+
+  - response
+
+   ```json
+   {
+     "id": "fc1e197b-52c3-49c2-a4e7-db4b8122ecc7"
+   }
+   ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - submit registration</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/registration?flow=FLOW_ID</span>
+
+   - headers
+
+   ```json
+   {
+     "Content-Type": "Application/json"
+   }
+   ```  
+  - request
+
+   ```json
+   {
+    "method": "password",
+    "traits": { "email": "voter@example.com" },
+    "password": "StrADSgPass123!"
+   }
+   ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - login flow calls</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login/api</span>
+
+  - response
+
+   ```json
+   {
+      "id": "fc1e197b-52c3-49c2-a4e7-db4b8122ecc7"
+   }
+   ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - submit login</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FLOW_ID</span>
+
+  - headers
+
+   ```json
+   {
+      "Content-Type": "application/json"
+   }
+   ```
+
+  - request
+
+   ```json
+   {
+    "method": "password",
+    "identifier": "voter@example.com",
+    "password": "StrADSgPass123!"
+   }
+   ```
+
+   - response
+
+   ```json
+   {
+      "session_token": "ory_st_5BLHJrBecmHai5eHKsJLd0FhcskLDmi4"
+   }
+   ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - validate session token</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FLOW_ID</span>
+
+- headers
+
+   ```json
+   {
+      "Accept": "application/json",
+      "X-Session-Token": "ory_st_5BLHJrBecmHai5eHKsJLd0FhcskLDmi4"
+   }
+   ```
+
 ---
 
 ## 6.1 - Class Diagram
