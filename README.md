@@ -12,12 +12,12 @@ Recomended Reading: http://diego-pacheco.blogspot.com/2021/10/breaking-problems-
 
 ### 2. 🎯 Goals
 
-- Handle the Traffic: the system must be strong enough to take 250k hits per second without breaking.
-- Save Every Vote: When someone votes, we make sure it is saved safely before we tell them success.
-- Stop Cheaters: We need security guards to block bots before they get in.
-- Real-time speed: We need to send the vote count to everyone's phone instantly, like a live scoreboard.
-- Stay Online: Even if part of the system breaks, the rest must keep working so people can still vote.
-- No Double voting: We need to make sure nobody votes twice.
+- **Handle the Traffic:** the system must be strong enough to take 250k hits per second without breaking.
+- **Save Every Vote:** When someone votes, we make sure it is saved safely before we tell them success.
+- **Stop Cheaters:** We need security guards to block bots before they get in.
+- **Real-time speed:** We need to send the vote count to everyone's phone instantly, like a live scoreboard.
+- **Stay Online:** Even if part of the system breaks, the rest must keep working so people can still vote.
+- **No Double voting:** We need to make sure nobody votes twice.
 
 Recommended Learning: http://diego-pacheco.blogspot.com/2020/05/education-vs-learning.html
 
@@ -26,11 +26,11 @@ Recommended Learning: http://diego-pacheco.blogspot.com/2020/05/education-vs-lea
 List in form of bullets what non-goals do have. Here it's great to have 5-10 lines.
 Example:
 
-- No monolith: We won't build one giant block of software. We will break it into small pieces so it's easier to manage.
-- No mainframes: We wont use mainframe computers or keep servers in our own office. We will use Cloud (AWS).
-- No Heavy Business Logic: The app won't calculate totals or validate global vote limits; it remains a "thin client" focused on UI and local input validation.
-- No Local Truth: Local storage (Hive/SharedPrefs) will not be the source of truth for a "successful vote"—only the server's signed acknowledgment counts.
-- No Custom Cryptography: We won’t build our own encryption algorithms; we will strictly use platform-standard Secure Enclave (iOS) and Keystore (Android).
+- **No monolith:** We won't build one giant block of software. We will break it into small pieces so it's easier to manage.
+- **No mainframes:** We wont use mainframe computers or keep servers in our own office. We will use Cloud (AWS).
+- **No Heavy Business Logic:** The app won't calculate totals or validate global vote limits; it remains a "thin client" focused on UI and local input validation.
+- **No Local Truth:** Local storage (Hive/SharedPrefs) will not be the source of truth for a "successful vote"—only the server's signed acknowledgment counts.
+- **No Custom Cryptography:** We won’t build our own encryption algorithms; we will strictly use platform-standard Secure Enclave (iOS) and Keystore (Android).
 
 Recommended Reading: http://diego-pacheco.blogspot.com/2021/01/requirements-are-dangerous.html
 
