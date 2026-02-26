@@ -41,7 +41,7 @@ Build a voting system for a huge tv show or event where 300 Million people might
 - **No Local Truth:** Local storage (Hive/SharedPrefs) will not be the source of truth for a "successful vote"—only the server's signed acknowledgment counts.
 - **No Custom Cryptography:** We won’t build our own encryption algorithms; we will strictly use platform-standard Secure Enclave (iOS) and Keystore (Android).
 
-### 📐 3. Principles
+### 📐 4. Principles
 
 List in form of bullets what design principles you want to be followed, it's great to have 5-10 lines.
 
@@ -54,11 +54,11 @@ List in form of bullets what design principles you want to be followed, it's gre
 8. **Observability** Fast feedbacks, detect, diagnose, and fix problems faster
 
 
-### 🏗️ 4. Overall Diagrams
+### 🏗️ 5. Overall Diagrams
 
 Here there will be a bunch of diagrams, to understand the solution.
 
-🗂️ 4.1 Overall architecture: Show the big picture, relationship between macro components.
+🗂️ 5.1 Overall architecture: Show the big picture, relationship between macro components.
 
 <img src="images/overall_diagram_simple_v2.png">
 
