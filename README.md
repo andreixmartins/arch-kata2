@@ -38,11 +38,12 @@ Recommended Reading: http://diego-pacheco.blogspot.com/2021/01/requirements-are-
 
 List in form of bullets what design principles you want to be followed, it's great to have 5-10 lines.
 
-1 - Event-Driven Architecture: Use asynchronous ingestion via a message broker (kafka/sqs) to decouple high-velocity writes from processing.
-2 - Optimistic UI Updates: Provide the user with immediate visual confirmation of their vote while the actual sync happens asynchronously in the background.
-3 - Reactive State Management: Use BLoC or Signals to ensure the UI reacts instantly to backend streams without unnecessary full-screen rebuilds.
-4 - Hardware-Backed Security: Leverage Native Channels to access biometric hardware, ensuring the "one-person-one-vote" rule is tied to the physical device.
-5 - Graceful Degradation: If the network is congested, the app should automatically disable heavy animations and simplify the UI to prioritize the voting action.
+1. **Event-Driven Architecture:** Use asynchronous ingestion via a message broker (kafka/sqs) to decouple high-velocity writes from processing.
+
+2. **Optimistic UI Updates:** Provide the user with immediate visual confirmation of their vote while the actual sync happens asynchronously in the background.
+3. **Reactive State Management:** Use BLoC or Signals to ensure the UI reacts instantly to backend streams without unnecessary full-screen rebuilds.
+4. **Hardware-Backed Security:** Leverage Native Channels to access biometric hardware, ensuring the "one-person-one-vote" rule is tied to the physical device.
+5. **Graceful Degradation:** If the network is congested, the app should automatically disable heavy animations and simplify the UI to prioritize the voting action.
 
 Recommended Reading: http://diego-pacheco.blogspot.com/2018/01/stability-principles.html
 
