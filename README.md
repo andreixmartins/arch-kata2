@@ -689,38 +689,37 @@ Tradeoffs:
 * **Querying:** Complex relational queries and joins are not supported or require manual composition.
 * **Auditability:** Harder to guarantee deterministic, tamper-proof, append-only records.
 
-X-Ray x Jaeger
 
-```
-X-ray
-  * Fully managed
-  * No cluster to maintain, no upgrades, no tuning.
-  * Deep integration with AWS
-  * Automatic service maps
-  * Very simple for those who are 100% AWS
+## Tradeoffs X-Ray vs Jaeger
 
-  - Automatically instruments:
-    API Gateway
-    Lambda
-    DynamoDB
-    SQS / SNS
-    ECS / EKS
-    ALB / ELB
+### X-Ray
 
-Jaeger
-  * Open-source, CNCF standard
-  * High compatibility with OpenTelemetry
-  * Ideal for hybrid or self-hosted environments
-  * No vendor lock-in
-  * More flexible
+#### PROS (+)
+* **AWS integration:** Seamlessly integrates with AWS Lambda, Amazon EC2, Amazon ECS, and Amazon API Gateway.
+* **Simple setup:** Minimal configuration when running inside AWS.
+* **Fully managed:** No need to maintain tracing infrastructure.
+* **Security:** Works with IAM roles and AWS security policies.
 
-  - Pluggable with:
-    Grafana
-    Prometheus
-    Tempo
-    Elastic
-    Kafka
-```
+#### CONS (-)
+* **Vendor lock-in:** Strong dependency on the AWS ecosystem.
+* **Limited flexibility:** Less customizable compared to open-source solutions.
+* **Cost:** High trace volume can become expensive.
+* **Closed ecosystem:** Feature evolution depends on AWS roadmap.
+
+---
+
+### Jaeger
+
+#### PROS (+)
+* **Open source:** No vendor lock-in and strong community support.
+* **Multi-cloud:** Runs anywhere (Kubernetes, VMs, bare metal).
+* **Integration:** Native compatibility with OpenTelemetry.
+* **Flexibility:** No vendor lock-in
+
+#### CONS (-)
+* **Complexity:** Requires managing storage, scaling, and retention.
+* **Maintenance:** Upgrades and tuning are your responsibility.
+* **Indirect cost:** Infrastructure and operational overhead.
 
 # AWS API Gateway
 
