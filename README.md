@@ -475,251 +475,280 @@ Tradeoffs:
 ### Flutter
 
 #### PROS (+)
-* **One Codebase:** A single codebase targets iOS and Android, reducing maintenance effort and ensuring feature parity.
-* **Near‑Native Performance:** Compiles to ARM/machine code, enabling high performance close to native apps.
-* **Consistent UI:** Uses the Skia/Impeller rendering engines to deliver pixel‑perfect, uniform UI across devices and OS versions.
-* **Security Access:** Supports integration with platform-level security features like Secure Enclave (iOS) and Keystore (Android).
-* **Realtime Ready:** Strong support for WebSockets, Streams, and gRPC, ideal for realtime or data-driven apps.
+
+- **One Codebase:** A single codebase targets iOS and Android, reducing maintenance effort and ensuring feature parity.
+- **Near‑Native Performance:** Compiles to ARM/machine code, enabling high performance close to native apps.
+- **Consistent UI:** Uses the Skia/Impeller rendering engines to deliver pixel‑perfect, uniform UI across devices and OS versions.
+- **Security Access:** Supports integration with platform-level security features like Secure Enclave (iOS) and Keystore (Android).
+- **Realtime Ready:** Strong support for WebSockets, Streams, and gRPC, ideal for realtime or data-driven apps.
 
 #### CONS (-)
-* **Engine Overhead:** App binaries are generally larger because of the bundled Flutter engine.
-* **Native Integration:** Advanced or highly platform-specific functionalities may require Method Channels using Swift/Kotlin.
-* **Ecosystem Limitations:** Certain niche or OS‑specific libraries may be less mature than their native equivalents.
+
+- **Engine Overhead:** App binaries are generally larger because of the bundled Flutter engine.
+- **Native Integration:** Advanced or highly platform-specific functionalities may require Method Channels using Swift/Kotlin.
+- **Ecosystem Limitations:** Certain niche or OS‑specific libraries may be less mature than their native equivalents.
 
 ---
 
 ### Native
 
 #### PROS (+)
-* **Maximum Performance:** Direct access to the OS and hardware results in the best possible execution speed and responsiveness.
-* **Deep Platform Integration:** Full support for advanced APIs (ARKit, Metal, Jetpack, etc.) with no abstraction layer.
-* **Smallest Binary Footprint:** No embedded engine leads to smaller application sizes.
-* **OS‑Aligned UI/UX:** User interfaces automatically follow platform guidelines, animations, and accessibility standards.
+
+- **Maximum Performance:** Direct access to the OS and hardware results in the best possible execution speed and responsiveness.
+- **Deep Platform Integration:** Full support for advanced APIs (ARKit, Metal, Jetpack, etc.) with no abstraction layer.
+- **Smallest Binary Footprint:** No embedded engine leads to smaller application sizes.
+- **OS‑Aligned UI/UX:** User interfaces automatically follow platform guidelines, animations, and accessibility standards.
 
 #### CONS (-)
-* **Two Codebases:** iOS and Android require separate implementations, increasing maintenance costs and time to market.
-* **Slower Feature Parity:** Releases may diverge if one platform receives updates sooner than the other.
-* **Higher Development Cost:** Requires specialized skills in both ecosystems (Swift and Kotlin).
 
+- **Two Codebases:** iOS and Android require separate implementations, increasing maintenance costs and time to market.
+- **Slower Feature Parity:** Releases may diverge if one platform receives updates sooner than the other.
+- **Higher Development Cost:** Requires specialized skills in both ecosystems (Swift and Kotlin).
 
 ## Computation Scale
+
 ### AWS EKS on Fargate
 
 #### PROS (+)
-* **Management:** No management, cluster simplicity with Fargate profiles.
-* **Isolation:** No cluster nodes, each pod runs in a micro-VM with Firecracker.
-* **Billing:** No capacity plan, pay per use, CPU and memory usage only.
-* **Scaling:** Auto scaling only in pods, more efficient and faster than node election.
+
+- **Management:** No management, cluster simplicity with Fargate profiles.
+- **Isolation:** No cluster nodes, each pod runs in a micro-VM with Firecracker.
+- **Billing:** No capacity plan, pay per use, CPU and memory usage only.
+- **Scaling:** Auto scaling only in pods, more efficient and faster than node election.
 
 #### CONS (-)
-* **Customization:** No DaemonSets, there are no EC2 nodes, and also a limited ephemeral disk (~20 GiB).
-* **Observability:** Agents must be sidecars on pods (instead of cluster-wide DaemonSets).
-* **Cost:** It can be more expensive than EC2 if you have heavy batch jobs or high compute throughput.
+
+- **Customization:** No DaemonSets, there are no EC2 nodes, and also a limited ephemeral disk (~20 GiB).
+- **Observability:** Agents must be sidecars on pods (instead of cluster-wide DaemonSets).
+- **Cost:** It can be more expensive than EC2 if you have heavy batch jobs or high compute throughput.
 
 ---
 
 ### AWS ECS on Fargate
 
 #### PROS (+)
-* **Zero infrastructure management:** AWS handles provisioning, scaling, patching.
-* **Isolation:** Strong security boundary per task (ideal for multi-tenancy).
-* **Pay-as-you-go:** Billing is per vCPU and GiB-hour, no wasted capacity.
-* **Auto-scaling:** Tasks scale without cluster capacity planning.
+
+- **Zero infrastructure management:** AWS handles provisioning, scaling, patching.
+- **Isolation:** Strong security boundary per task (ideal for multi-tenancy).
+- **Pay-as-you-go:** Billing is per vCPU and GiB-hour, no wasted capacity.
+- **Auto-scaling:** Tasks scale without cluster capacity planning.
 
 #### CONS (-)
-* **Feature limits:** No privileged containers, host networking, GPUs.
-* **Cost:** More expensive for sustained or heavy workloads than EC2.
-* **Quotas:** Fargate launch throttles and ephemeral storage (~20 GiB default).
-* **Observability:** No DaemonSets — logging/monitoring agents must run as sidecars (extra cost overhead).
 
+- **Feature limits:** No privileged containers, host networking, GPUs.
+- **Cost:** More expensive for sustained or heavy workloads than EC2.
+- **Quotas:** Fargate launch throttles and ephemeral storage (~20 GiB default).
+- **Observability:** No DaemonSets — logging/monitoring agents must run as sidecars (extra cost overhead).
 
 ## Database
+
 ### AWS RDS PostgreSQL
 
 #### PROS (+)
-* **Scalability:** Scales vertically and horizontally via Aurora read replicas.
-* **Performance:** Strong OLTP performance with indexes and joins.
-* **Latency:** Low-latency reads in multiple Regions.
+
+- **Scalability:** Scales vertically and horizontally via Aurora read replicas.
+- **Performance:** Strong OLTP performance with indexes and joins.
+- **Latency:** Low-latency reads in multiple Regions.
 
 #### CONS (-)
-* **Limitation:** Must use RDS Proxy or pooling for apps with millions of users.
-* **Operation:** Still need to think about version upgrades, storage, scaling thresholds, and failover planning.
-* **Multi-Region writes:** Global database only supports fast cross-Region reads; writes go to one Region.
+
+- **Limitation:** Must use RDS Proxy or pooling for apps with millions of users.
+- **Operation:** Still need to think about version upgrades, storage, scaling thresholds, and failover planning.
+- **Multi-Region writes:** Global database only supports fast cross-Region reads; writes go to one Region.
 
 ---
 
 ### AWS DynamoDB
 
 #### PROS (+)
-* **Performance:** Single-digit millisecond latency at any scale(SSD-backed).
-* **Scalability:** Horizontal Scaling included by design, Automatic partitioning, trillions of items, 10M+ req/sec.
-* **Availability:** Built-in multi-AZ replication(multi-region, active-active).
+
+- **Performance:** Single-digit millisecond latency at any scale(SSD-backed).
+- **Scalability:** Horizontal Scaling included by design, Automatic partitioning, trillions of items, 10M+ req/sec.
+- **Availability:** Built-in multi-AZ replication(multi-region, active-active).
 
 #### CONS (-)
-* **Performance:** No Relational queries (no joins, no OR conditions).
-* **Flexibility:** Schema Less, requires careful (Partition Key/Sort Key) upfront data modeling, Query patterns must be known early.
-* **Cost:** Expensive if: high read/write rates, inefficient partition keys, large items >400kb.
 
+- **Performance:** No Relational queries (no joins, no OR conditions).
+- **Flexibility:** Schema Less, requires careful (Partition Key/Sort Key) upfront data modeling, Query patterns must be known early.
+- **Cost:** Expensive if: high read/write rates, inefficient partition keys, large items >400kb.
 
 ## AWS MSK (KAFKA) vs AWS SQS
 
 ### AWS MSK (KAFKA)
 
 #### PROS (+)
-* **Debugging:** Event streaming with replay/rewind.
-* **Scalability:** High throughput.
-* **Consistency:** Strict ordering per partition.
-* **Integration:** Rich ecosystem (Kafka Streams, Flink, Connect).
+
+- **Debugging:** Event streaming with replay/rewind.
+- **Scalability:** High throughput.
+- **Consistency:** Strict ordering per partition.
+- **Integration:** Rich ecosystem (Kafka Streams, Flink, Connect).
 
 #### CONS (-)
-* **Overhead:** Operational complexity.
-* **Cost:** Costly at low/variable volume.
+
+- **Overhead:** Operational complexity.
+- **Cost:** Costly at low/variable volume.
 
 ---
+
 ### AWS SQS
 
 #### PROS (+)
-* **Simplicity:** Fully managed, zero ops.
-* **Cost:** Pay-per-request pricing.
-* **Reliability:** DLQs and retries built-in.
-* **Security:** IAM integration + per-queue isolation.
-* **Automation:** Tight AWS integration (Lambda, Step Functions).
+
+- **Simplicity:** Fully managed, zero ops.
+- **Cost:** Pay-per-request pricing.
+- **Reliability:** DLQs and retries built-in.
+- **Security:** IAM integration + per-queue isolation.
+- **Automation:** Tight AWS integration (Lambda, Step Functions).
 
 #### CONS (-)
-* **Duplication:** At-least-once delivery only.
 
+- **Duplication:** At-least-once delivery only.
 
 ## Redis (Self-Hosted) vs AWS Elastic Cache
-
 
 ### Redis (Self-Hosted)
 
 #### PROS (+)
-* **Performance:** Redis offers multiple methods for caching data, which can significantly reduce data access latency and increase throughput.
+
+- **Performance:** Redis offers multiple methods for caching data, which can significantly reduce data access latency and increase throughput.
 
 #### CONS (-)
-* **Cost:** Redis clustering solutions needs to be done in-house and requires a significant amount of effort.
+
+- **Cost:** Redis clustering solutions needs to be done in-house and requires a significant amount of effort.
 
 ---
 
 ### AWS Elastic Cache
 
 #### PROS (+)
-* **Setup and Maintenance:** ElastiCache is a fully managed AWS service for Redis, not necessary to deal with ec2 instances and configs to install Redis.
+
+- **Setup and Maintenance:** ElastiCache is a fully managed AWS service for Redis, not necessary to deal with ec2 instances and configs to install Redis.
 
 #### CONS (-)
-* **Limitations:** ElastiCache runs only within the Amazon Web Services ecosystem, you may be concerned about vendor lock-in.
 
+- **Limitations:** ElastiCache runs only within the Amazon Web Services ecosystem, you may be concerned about vendor lock-in.
 
 ## Tradeoffs Auth0 vs Ory Hydra+Kratos
+
 ### AUTH0
 
 #### PROS (+)
-* **Setup:** Fully managed SaaS, quick setup with minimal configuration.
-* **Features:** Comprehensive auth solution (login UI, MFA, social/enterprise SSO, user management, all included).
-* **Integrations:** Extensive pre-built integrations (100+ social/enterprise providers, SDKs for all major platforms).
-* **Compliance:** SOC 2, ISO 27001, GDPR-compliant out of the box.
-* **Developer Experience:** Rich documentation, pre-built UI components (Universal Login), extensive SDK ecosystem.
-* **Time-to-Market:** Near-instant deployment, no infrastructure management.
+
+- **Setup:** Fully managed SaaS, quick setup with minimal configuration.
+- **Features:** Comprehensive auth solution (login UI, MFA, social/enterprise SSO, user management, all included).
+- **Integrations:** Extensive pre-built integrations (100+ social/enterprise providers, SDKs for all major platforms).
+- **Compliance:** SOC 2, ISO 27001, GDPR-compliant out of the box.
+- **Developer Experience:** Rich documentation, pre-built UI components (Universal Login), extensive SDK ecosystem.
+- **Time-to-Market:** Near-instant deployment, no infrastructure management.
 
 #### CONS (-)
-* **Cost:** Expensive at scale (pricing based on MAUs, can reach $10K+/month for high volume).
-* **Vendor Lock-in:** Proprietary APIs and data models make migration challenging.
-* **Customization:** Limited control over core flows, infrastructure, and data storage location.
-* **Performance & control:** Latency and behavior tied to Auth0 regions and infrastructure; limited tuning.
-* **Data Sovereignty:** User data stored in Auth0's infrastructure (compliance risk in some regions).
-* **Flexibility:** Difficult to implement non-standard OAuth flows or custom business logic.
+
+- **Cost:** Expensive at scale (pricing based on MAUs, can reach $10K+/month for high volume).
+- **Vendor Lock-in:** Proprietary APIs and data models make migration challenging.
+- **Customization:** Limited control over core flows, infrastructure, and data storage location.
+- **Performance & control:** Latency and behavior tied to Auth0 regions and infrastructure; limited tuning.
+- **Data Sovereignty:** User data stored in Auth0's infrastructure (compliance risk in some regions).
+- **Flexibility:** Difficult to implement non-standard OAuth flows or custom business logic.
 
 ---
+
 ### ORY (HYDRA + KRATOS)
 
 #### PROS (+)
-* **Cost:** Open source (Apache 2.0), self-hosted = free for unlimited users. Ory Network offers managed option.
-* **Control:** Full control over infrastructure, data residency, deployment topology.
-* **Feature Completeness:** Hydra (OAuth2/OIDC) + Kratos (identity/user management, registration, login, recovery, MFA, profile management).
-* **Customization:** Complete flexibility in UI/UX design, business logic, custom auth flows, and user journey.
-* **Standards Compliance:** Strict OAuth 2.0 and OpenID Connect implementation (Hydra is certified).
-* **Performance:** Deploy in your VPC/regions for optimal latency and data locality.
-* **Scalability:** Battle-tested at scale (millions of users), horizontal scaling, stateless architecture.
-* **Modularity:** Use both together or separately; integrate with existing systems; swap components as needed.
+
+- **Cost:** Open source (Apache 2.0), self-hosted = free for unlimited users. Ory Network offers managed option.
+- **Control:** Full control over infrastructure, data residency, deployment topology.
+- **Feature Completeness:** Hydra (OAuth2/OIDC) + Kratos (identity/user management, registration, login, recovery, MFA, profile management).
+- **Customization:** Complete flexibility in UI/UX design, business logic, custom auth flows, and user journey.
+- **Standards Compliance:** Strict OAuth 2.0 and OpenID Connect implementation (Hydra is certified).
+- **Performance:** Deploy in your VPC/regions for optimal latency and data locality.
+- **Scalability:** Battle-tested at scale (millions of users), horizontal scaling, stateless architecture.
+- **Modularity:** Use both together or separately; integrate with existing systems; swap components as needed.
 
 #### CONS (-)
-* **Setup Complexity:** Requires configuring two services (Hydra + Kratos) and building/customizing UIs using pre-built components.
-* **Operations:** Self-hosting means managing infrastructure, databases, monitoring, updates, security patches for both services.
-* **Integration Work:** Social logins and enterprise SSO require configuration and custom integration code.
-* **Support:** Community support only (unless paying for Ory Network or enterprise support).
-* **Time-to-Market:** Longer initial setup and customization compared to turnkey SaaS solutions.
 
+- **Setup Complexity:** Requires configuring two services (Hydra + Kratos) and building/customizing UIs using pre-built components.
+- **Operations:** Self-hosting means managing infrastructure, databases, monitoring, updates, security patches for both services.
+- **Integration Work:** Social logins and enterprise SSO require configuration and custom integration code.
+- **Support:** Community support only (unless paying for Ory Network or enterprise support).
+- **Time-to-Market:** Longer initial setup and customization compared to turnkey SaaS solutions.
 
 ## Tradeoffs SQL vs NoSql
 
 ### SQL
 
 #### PROS (+)
-* **Consistency:** Strong ACID guarantees, perfect for enforcing rules like `UNIQUE (election_id, voter_id)`.
-* **Integrity:** Native constraints (FK, UNIQUE, CHECK) prevent invalid states by design.
-* **Transactions:** Multi-row and multi-table transactions ensure atomic operations.
-* **Joins:** Efficient relational queries across users, voter identities, elections, and votes.
-* **Maturity:** Tooling, monitoring, migrations, and operational stability are excellent.
-* **Auditability:** Ideal for systems where every write must be traceable and deterministic.
+
+- **Consistency:** Strong ACID guarantees, perfect for enforcing rules like `UNIQUE (election_id, voter_id)`.
+- **Integrity:** Native constraints (FK, UNIQUE, CHECK) prevent invalid states by design.
+- **Transactions:** Multi-row and multi-table transactions ensure atomic operations.
+- **Joins:** Efficient relational queries across users, voter identities, elections, and votes.
+- **Maturity:** Tooling, monitoring, migrations, and operational stability are excellent.
+- **Auditability:** Ideal for systems where every write must be traceable and deterministic.
 
 #### CONS (-)
-* **Scalability:** Horizontal sharding is more complex than in many NoSQL databases.
-* **Operational Overhead:** Large relational schemas require careful indexing and tuning.
-* **Flexibility:** Schema changes (migrations) are more rigid and may require downtime windows.
-* **Cost:** At massive scale, distributed SQL clusters (e.g., Cockroach, Yugabyte) can be expensive.
-* **Write Throughput:** Not optimized for extremely high write rates per second (e.g., billions/hour) without sharding.
+
+- **Scalability:** Horizontal sharding is more complex than in many NoSQL databases.
+- **Operational Overhead:** Large relational schemas require careful indexing and tuning.
+- **Flexibility:** Schema changes (migrations) are more rigid and may require downtime windows.
+- **Cost:** At massive scale, distributed SQL clusters (e.g., Cockroach, Yugabyte) can be expensive.
+- **Write Throughput:** Not optimized for extremely high write rates per second (e.g., billions/hour) without sharding.
 
 ---
 
 ### NoSql
 
 #### PROS (+)
-* **Scalability:** Designed for effortless horizontal scaling and very high write throughput.
-* **Availability:** Prioritizes uptime and partition tolerance (AP in CAP theorem).
-* **Flexibility:** Schema-less models allow rapid iteration without migrations.
-* **Cost:** Commodity hardware, auto-sharding, and simple replication can reduce infrastructure cost.
-* **Distribution:** Multi-region replication and low-latency access are usually built-in.
+
+- **Scalability:** Designed for effortless horizontal scaling and very high write throughput.
+- **Availability:** Prioritizes uptime and partition tolerance (AP in CAP theorem).
+- **Flexibility:** Schema-less models allow rapid iteration without migrations.
+- **Cost:** Commodity hardware, auto-sharding, and simple replication can reduce infrastructure cost.
+- **Distribution:** Multi-region replication and low-latency access are usually built-in.
 
 #### CONS (-)
-* **Native Consistency:** Lacks strong ACID semantics by default; eventual consistency is common.
-* **Uniqueness:** No native support for constraints like `UNIQUE (election_id, voter_id)` across shards.
-* **Transactions:** Limited or nonexistent multi-document or multi-collection transactions.
-* **Integrity:** Application must enforce invariants — error-prone and unsafe for voting systems.
-* **Querying:** Complex relational queries and joins are not supported or require manual composition.
-* **Auditability:** Harder to guarantee deterministic, tamper-proof, append-only records.
 
+- **Native Consistency:** Lacks strong ACID semantics by default; eventual consistency is common.
+- **Uniqueness:** No native support for constraints like `UNIQUE (election_id, voter_id)` across shards.
+- **Transactions:** Limited or nonexistent multi-document or multi-collection transactions.
+- **Integrity:** Application must enforce invariants — error-prone and unsafe for voting systems.
+- **Querying:** Complex relational queries and joins are not supported or require manual composition.
+- **Auditability:** Harder to guarantee deterministic, tamper-proof, append-only records.
 
 ## Tradeoffs X-Ray vs Jaeger
 
 ### X-Ray
 
 #### PROS (+)
-* **AWS integration:** Seamlessly integrates with AWS Lambda, Amazon EC2, Amazon ECS, and Amazon API Gateway.
-* **Simple setup:** Minimal configuration when running inside AWS.
-* **Fully managed:** No need to maintain tracing infrastructure.
-* **Security:** Works with IAM roles and AWS security policies.
+
+- **AWS integration:** Seamlessly integrates with AWS Lambda, Amazon EC2, Amazon ECS, and Amazon API Gateway.
+- **Simple setup:** Minimal configuration when running inside AWS.
+- **Fully managed:** No need to maintain tracing infrastructure.
+- **Security:** Works with IAM roles and AWS security policies.
 
 #### CONS (-)
-* **Vendor lock-in:** Strong dependency on the AWS ecosystem.
-* **Limited flexibility:** Less customizable compared to open-source solutions.
-* **Cost:** High trace volume can become expensive.
-* **Closed ecosystem:** Feature evolution depends on AWS roadmap.
+
+- **Vendor lock-in:** Strong dependency on the AWS ecosystem.
+- **Limited flexibility:** Less customizable compared to open-source solutions.
+- **Cost:** High trace volume can become expensive.
+- **Closed ecosystem:** Feature evolution depends on AWS roadmap.
 
 ---
 
 ### Jaeger
 
 #### PROS (+)
-* **Open source:** No vendor lock-in and strong community support.
-* **Multi-cloud:** Runs anywhere (Kubernetes, VMs, bare metal).
-* **Integration:** Native compatibility with OpenTelemetry.
-* **Flexibility:** No vendor lock-in
+
+- **Open source:** No vendor lock-in and strong community support.
+- **Multi-cloud:** Runs anywhere (Kubernetes, VMs, bare metal).
+- **Integration:** Native compatibility with OpenTelemetry.
+- **Flexibility:** No vendor lock-in
 
 #### CONS (-)
-* **Complexity:** Requires managing storage, scaling, and retention.
-* **Maintenance:** Upgrades and tuning are your responsibility.
-* **Indirect cost:** Infrastructure and operational overhead.
+
+- **Complexity:** Requires managing storage, scaling, and retention.
+- **Maintenance:** Upgrades and tuning are your responsibility.
+- **Indirect cost:** Infrastructure and operational overhead.
 
 # AWS API Gateway
 
@@ -799,13 +828,11 @@ What is a majore component? A service, a lambda, a important ui, a generalized a
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/oauth</span>
 
-- User authentication endpoint usually used to identify the current user session and fetch user data. 
-Response must return the user_id, access_token, refresh_token, expires_in and token_type.
-
+- User authentication endpoint usually used to identify the current user session and fetch user data.
+  Response must return the user_id, access_token, refresh_token, expires_in and token_type.
   1. provider and provider_token are required fields
   2. Response code success must be 200 OK.
   3. Response code failure for invalid token must be 401 Unauthorized.
-  
   - request
 
   ```json
@@ -834,7 +861,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/refresh</span>
 
 - This endpoint issues a new access token when the current access token expires.
   The client must provide a valid refresh token previously issued during authentication.
-
   1. refresh_token is required.
   2. Response code success must be 200 OK.
   3. Response code failure for invalid token must be 401 Unauthorized.
@@ -862,14 +888,12 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections</span>
 
 - Endpoint to create a new voting election.
-
   1. Authorization header with valid Bearer token is required.
   2. Fields: name, starts_at, ends_at, and at least one contestant are required.
   3. Response code success must be 201 Created
   4. Response code failure for invalid fields must be 400 Bad Request
   5. Response code failure for unauthorized must be 401 Unauthorized
   6. Response code failure for forbidden operation must be 403 Forbidden.
-  
   - headers
 
   ```json
@@ -917,9 +941,9 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=open</span>
+
 - Endpoint used to retrieve a list of elections available in the system.
   The results can be filtered by election status (open, closed).
-  
   1. Status must be one of (open, closed).
   2. Response code success must be 200 OK.
   3. Response code failure for invalid query parameter must be 400 Bad Request.
@@ -946,11 +970,9 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/leaderboard</span>
 
 - Endpoint to get the leaderboard of a given election.
-
   1. election_id path parameter is required.
   2. Response code success must be 200 OK
   3. Response code failure for election not found must be 404 Not Found.
-
   - response
 
   ```json
@@ -975,13 +997,11 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/contestants</span>
 
-- Endpoint to get the list of contestants for a given election. 
-
+- Endpoint to get the list of contestants for a given election.
   1. election_id path parameter is required.
   2. Response code success must be 200 OK.
   3. Response code failure for invalid election_id format must be 400 Bad Request.
   4. Response code failure for election not found must be 404 Not Found.
-
   - response
 
   ```json
@@ -1008,7 +1028,6 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/votes</span>
 
 - Endpoint to submit a vote for a given election.
-
   1. Authorization header with valid Bearer token is required.
   2. Idempotency-Key header is required.
   3. ballot is required.
@@ -1019,39 +1038,38 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/
   8. Response code failure for unauthorized access must be 401 Unauthorized.
   9. Response code failure for election closed must be 403 Forbidden.
   10. Response code failure for duplicate vote must be 409 Conflict.
-  
-   - headers
+  - headers
 
-   ```json
-   {
-     "Authorization": "Bearer access_token",
-     "Idempotency-Key": "string"
-   }
-   ```
+  ```json
+  {
+    "Authorization": "Bearer access_token",
+    "Idempotency-Key": "string"
+  }
+  ```
 
-   - request
+  - request
 
-   ```json
-   {
-     "ballot": {
-       "contestant_id": "string"
-     },
-     "client_timestamp": "string",
-     "meta": {
-       "device_id": "string",
-       "app_version": "string"
-     }
-   }
-   ```
+  ```json
+  {
+    "ballot": {
+      "contestant_id": "string"
+    },
+    "client_timestamp": "string",
+    "meta": {
+      "device_id": "string",
+      "app_version": "string"
+    }
+  }
+  ```
 
-   - response
+  - response
 
-   ```json
-   {
-     "vote_id": "string",
-     "submited_at": "string"
-   }
-   ```
+  ```json
+  {
+    "vote_id": "string",
+    "submited_at": "string"
+  }
+  ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>Hydra - OAuth flow</span>
 
@@ -1059,105 +1077,106 @@ method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>/admin/clients</span>
 
 - Grants our application access (called only once)
+  - headers
 
-   - headers
+  ```json
+  {
+    "Content-Type": "Application/json"
+  }
+  ```
 
-   ```json
-   {
-     "Content-Type": "Application/json"
-   }
-   ```  
   - request
 
-   ```json
-   {
-     "client_id": "voter-app",
-     "grant_types": ["authorization_code","refresh_token"],
-     "response_types": ["code"],
-     "scope": "openid profile email vote:cast offline_access",
-     "redirect_uris": ["http://localhost:3001/auth/exchange"],
-     "token_endpoint_auth_method": "none"
-   }
-   ```
+  ```json
+  {
+    "client_id": "voter-app",
+    "grant_types": ["authorization_code", "refresh_token"],
+    "response_types": ["code"],
+    "scope": "openid profile email vote:cast offline_access",
+    "redirect_uris": ["http://localhost:3001/auth/exchange"],
+    "token_endpoint_auth_method": "none"
+  }
+  ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - register flow calls</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/registration/api</span>
 
-  - response
+- response
 
-   ```json
-   {
-     "id": "fc1e197b-52c3-49c2-a4e7-db4b8122ecc7"
-   }
-   ```
+```json
+{
+  "id": "fc1e197b-52c3-49c2-a4e7-db4b8122ecc7"
+}
+```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - submit registration</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/registration?flow=FLOW_ID</span>
 
-   - headers
+- headers
 
-   ```json
-   {
-     "Content-Type": "Application/json"
-   }
-   ```  
-  - request
+```json
+{
+  "Content-Type": "Application/json"
+}
+```
 
-   ```json
-   {
-    "method": "password",
-    "traits": { "email": "voter@example.com" },
-    "password": "StrADSgPass123!"
-   }
-   ```
+- request
+
+```json
+{
+  "method": "password",
+  "traits": { "email": "voter@example.com" },
+  "password": "StrADSgPass123!"
+}
+```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - login flow calls</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login/api</span>
 
-  - response
+- response
 
-   ```json
-   {
-      "id": "fc1e197b-52c3-49c2-a4e7-db4b8122ecc7"
-   }
-   ```
+```json
+{
+  "id": "fc1e197b-52c3-49c2-a4e7-db4b8122ecc7"
+}
+```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - submit login</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FLOW_ID</span>
 
-  - headers
+- headers
 
-   ```json
-   {
-      "Content-Type": "application/json"
-   }
-   ```
+```json
+{
+  "Content-Type": "application/json"
+}
+```
 
-  - request
+- request
 
-   ```json
-   {
-    "method": "password",
-    "identifier": "voter@example.com",
-    "password": "StrADSgPass123!"
-   }
-   ```
+```json
+{
+  "method": "password",
+  "identifier": "voter@example.com",
+  "password": "StrADSgPass123!"
+}
+```
 
-   - response
+- response
 
-   ```json
-   {
-      "session_token": "ory_st_5BLHJrBecmHai5eHKsJLd0FhcskLDmi4"
-   }
-   ```
+```json
+{
+  "session_token": "ory_st_5BLHJrBecmHai5eHKsJLd0FhcskLDmi4"
+}
+```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - validate session token</span>
 
@@ -1166,12 +1185,12 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FL
 
 - headers
 
-   ```json
-   {
-      "Accept": "application/json",
-      "X-Session-Token": "ory_st_5BLHJrBecmHai5eHKsJLd0FhcskLDmi4"
-   }
-   ```
+  ```json
+  {
+    "Accept": "application/json",
+    "X-Session-Token": "ory_st_5BLHJrBecmHai5eHKsJLd0FhcskLDmi4"
+  }
+  ```
 
 ---
 
@@ -1228,16 +1247,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FL
 
 ### **votes**
 
-| Name         | Type        | Size     | NOT NULL | Default           | Description                                          |
-| ------------ | ----------- | -------- | -------- | ----------------- | ---------------------------------------------------- |
-| vote_id      | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key                                          |
-| election_id  | uuid        | 16 bytes | YES      |                   | FK → elections(election_id)                          |
-| voter_id     | uuid        | 16 bytes | YES      |                   | FK → voter_identities(voter_id)                      |
-| vote_payload | jsonb       | var      | YES      |                   | Encrypted/anonymized ballot                          |
-| timestamp    | timestamptz | 8 bytes  | YES      | now()             | Vote submission time                                 |
-| receipt_hash | text        | var      | YES      |                   | Unique vote receipt                                  |
-| modified_at  | timestamptz | 8 bytes  | NO       |                   | Last modification                                    |
-| —            | UNIQUE      | —        | —        | —                 | (election_id, voter_id) enforces one vote per person |
+| Name              | Type        | Size     | NOT NULL | Default           | Description                                          |
+| ----------------- | ----------- | -------- | -------- | ----------------- | ---------------------------------------------------- |
+| vote_id           | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key                                          |
+| election_id       | uuid        | 16 bytes | YES      |                   | FK → elections(election_id)                          |
+| voter_id          | uuid        | 16 bytes | YES      |                   | FK → voter_identities(voter_id)                      |
+| vote_payload      | jsonb       | var      | YES      |                   | Encrypted/anonymized ballot                          |
+| timestamp         | timestamptz | 8 bytes  | YES      | now()             | Vote submission time                                 |
+| receipt_hash      | text        | var      | YES      |                   | Unique vote receipt                                  |
+| modified_at       | timestamptz | 8 bytes  | NO       |                   | Last modification                                    |
+| uq_election_voter | UNIQUE      | —        | —        | —                 | (election_id, voter_id) enforces one vote per person |
 
 ---
 
