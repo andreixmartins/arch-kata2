@@ -471,235 +471,222 @@ Tradeoffs:
 
 ## Flutter vs Native
 
-Flutter
+### Flutter
 
-```
-PROS (+)
-  * One Codebase: A single codebase targets iOS and Android, reducing maintenance effort and ensuring feature parity.
-  * Near‑Native Performance: Compiles to ARM/machine code, enabling high performance close to native apps.
-  * Consistent UI: Uses the Skia/Impeller rendering engines to deliver pixel‑perfect, uniform UI across devices and OS versions.
-  * Security Access: Supports integration with platform-level security features like Secure Enclave (iOS) and Keystore (Android).
-  * Realtime Ready: Strong support for WebSockets, Streams, and gRPC, ideal for realtime or data-driven apps.
+#### PROS (+)
+* **One Codebase:** A single codebase targets iOS and Android, reducing maintenance effort and ensuring feature parity.
+* **Near‑Native Performance:** Compiles to ARM/machine code, enabling high performance close to native apps.
+* **Consistent UI:** Uses the Skia/Impeller rendering engines to deliver pixel‑perfect, uniform UI across devices and OS versions.
+* **Security Access:** Supports integration with platform-level security features like Secure Enclave (iOS) and Keystore (Android).
+* **Realtime Ready:** Strong support for WebSockets, Streams, and gRPC, ideal for realtime or data-driven apps.
 
-CONS (+)
-  * Engine Overhead: App binaries are generally larger because of the bundled Flutter engine.
-  * Native Integration: Advanced or highly platform-specific functionalities may require Method Channels using Swift/Kotlin.
-  * Ecosystem Limitations: Certain niche or OS‑specific libraries may be less mature than their native equivalents.
-```
-
-Native
-
-```
-PROS (+)
-  * Maximum Performance: Direct access to the OS and hardware results in the best possible execution speed and responsiveness.
-  * Deep Platform Integration: Full support for advanced APIs (ARKit, Metal, Jetpack, etc.) with no abstraction layer.
-  * Smallest Binary Footprint: No embedded engine leads to smaller application sizes.
-  * OS‑Aligned UI/UX: User interfaces automatically follow platform guidelines, animations, and accessibility standards.
-
-CONS (+)
-  * Two Codebases: iOS and Android require separate implementations, increasing maintenance costs and time to market.
-  * Slower Feature Parity: Releases may diverge if one platform receives updates sooner than the other.
-  * Higher Development Cost: Requires specialized skills in both ecosystems (Swift and Kotlin).
-```
-
-## Computation Scale
-
-AWS EKS on Fargate
-
-```
-PROS (+)
-  * Management: No management, cluster simplicity with Fargate profiles.
-  * Isolation: No cluster nodes, each pod runs in a micro-VM with Firecracker.
-  * Billing: No capacity plan, pay per use, CPU and memory usage only.
-  * Scaling: Auto scaling only in pods, more efficient and faster than node election.
-
-CONS (+)
-  * Customization: No DaemonSets, there are no EC2 nodes, and also a limited ephemeral disk (~20 GiB).
-  * Observability: Agents must be sidecars on pods (instead of cluster-wide DaemonSets).
-  * Cost: It can be more expensive than EC2 if you have heavy batch jobs or high compute throughput.
-```
-
-AWS ECS on Fargate
-
-```
-PROS (+)
-  * Zero infrastructure management: AWS handles provisioning, scaling, patching.
-  * Isolation: Strong security boundary per task (ideal for multi-tenancy).
-  * Pay-as-you-go: Billing is per vCPU and GiB-hour, no wasted capacity.
-  * Auto-scaling: Tasks scale without cluster capacity planning.
-
-CONS (+)
-  * Feature limits: No privileged containers, host networking, GPUs.
-  * Cost: More expensive for sustained or heavy workloads than EC2.
-  * Quotas: Fargate launch throttles and ephemeral storage (~20 GiB default).
-  * Observability: No DaemonSets — logging/monitoring agents must run as sidecars (extra cost overhead).
-```
+#### CONS (-)
+* **Engine Overhead:** App binaries are generally larger because of the bundled Flutter engine.
+* **Native Integration:** Advanced or highly platform-specific functionalities may require Method Channels using Swift/Kotlin.
+* **Ecosystem Limitations:** Certain niche or OS‑specific libraries may be less mature than their native equivalents.
 
 ---
 
+### Native
+
+#### PROS (+)
+* **Maximum Performance:** Direct access to the OS and hardware results in the best possible execution speed and responsiveness.
+* **Deep Platform Integration:** Full support for advanced APIs (ARKit, Metal, Jetpack, etc.) with no abstraction layer.
+* **Smallest Binary Footprint:** No embedded engine leads to smaller application sizes.
+* **OS‑Aligned UI/UX:** User interfaces automatically follow platform guidelines, animations, and accessibility standards.
+
+#### CONS (-)
+* **Two Codebases:** iOS and Android require separate implementations, increasing maintenance costs and time to market.
+* **Slower Feature Parity:** Releases may diverge if one platform receives updates sooner than the other.
+* **Higher Development Cost:** Requires specialized skills in both ecosystems (Swift and Kotlin).
+
+
+## Computation Scale
+### AWS EKS on Fargate
+
+#### PROS (+)
+* **Management:** No management, cluster simplicity with Fargate profiles.
+* **Isolation:** No cluster nodes, each pod runs in a micro-VM with Firecracker.
+* **Billing:** No capacity plan, pay per use, CPU and memory usage only.
+* **Scaling:** Auto scaling only in pods, more efficient and faster than node election.
+
+#### CONS (-)
+* **Customization:** No DaemonSets, there are no EC2 nodes, and also a limited ephemeral disk (~20 GiB).
+* **Observability:** Agents must be sidecars on pods (instead of cluster-wide DaemonSets).
+* **Cost:** It can be more expensive than EC2 if you have heavy batch jobs or high compute throughput.
+
+---
+
+### AWS ECS on Fargate
+
+#### PROS (+)
+* **Zero infrastructure management:** AWS handles provisioning, scaling, patching.
+* **Isolation:** Strong security boundary per task (ideal for multi-tenancy).
+* **Pay-as-you-go:** Billing is per vCPU and GiB-hour, no wasted capacity.
+* **Auto-scaling:** Tasks scale without cluster capacity planning.
+
+#### CONS (-)
+* **Feature limits:** No privileged containers, host networking, GPUs.
+* **Cost:** More expensive for sustained or heavy workloads than EC2.
+* **Quotas:** Fargate launch throttles and ephemeral storage (~20 GiB default).
+* **Observability:** No DaemonSets — logging/monitoring agents must run as sidecars (extra cost overhead).
+
+
 ## Database
+### AWS RDS PostgreSQL
 
-AWS RDS PostgreSQL
+#### PROS (+)
+* **Scalability:** Scales vertically and horizontally via Aurora read replicas.
+* **Performance:** Strong OLTP performance with indexes and joins.
+* **Latency:** Low-latency reads in multiple Regions.
 
-```
-PROS (+)
-  * Scalability: Scales vertically and horizontally via Aurora read replicas.
-  * Performance: Strong OLTP performance with indexes and joins.
-  * Latency: Low-latency reads in multiple Regions
+#### CONS (-)
+* **Limitation:** Must use RDS Proxy or pooling for apps with millions of users.
+* **Operation:** Still need to think about version upgrades, storage, scaling thresholds, and failover planning.
+* **Multi-Region writes:** Global database only supports fast cross-Region reads; writes go to one Region.
 
-CONS (+)
-  * Limitation: Must use RDS Proxy or pooling for apps with millions of users.
-  * Operation: Still need to think about version upgrades, storage, scaling thresholds, and failover planning.
-  * Multi-Region writes: Global database only supports fast cross-Region reads; writes go to one Region.
-```
+---
 
-AWS DynamoDB
+### AWS DynamoDB
 
-```
-PROS (+)
-  * Performance: Single-digit millisecond latency at any scale(SSD-backed).
-  * Scalability: Horizontal Scaling included by design, Automatic partitioning, trillions of items, 10M+ req/sec.
-  * Availability: Built-in multi-AZ replication(multi-region, active-active).
+#### PROS (+)
+* **Performance:** Single-digit millisecond latency at any scale(SSD-backed).
+* **Scalability:** Horizontal Scaling included by design, Automatic partitioning, trillions of items, 10M+ req/sec.
+* **Availability:** Built-in multi-AZ replication(multi-region, active-active).
 
-CONS (+)
-  * Performance: No Relational queries (no joins, no OR conditions)
-  * Flexibility: Schema Less, requires careful (Partition Key/Sort Key) upfront data modeling, Query patterns must be known early.
-  * Cost: Expensive if: high read/write rates, inefficient partition keys, large items >400kb
-```
+#### CONS (-)
+* **Performance:** No Relational queries (no joins, no OR conditions).
+* **Flexibility:** Schema Less, requires careful (Partition Key/Sort Key) upfront data modeling, Query patterns must be known early.
+* **Cost:** Expensive if: high read/write rates, inefficient partition keys, large items >400kb.
+
 
 ## AWS MSK (KAFKA) vs AWS SQS
 
-AWS MSK (KAFKA)
+### AWS MSK (KAFKA)
 
-```
-PROS (+)
-  * Debugging: Event streaming with replay/rewind
-  * Scalability: High throughput
-  * Consistency: Strict ordering per partition
-  * Integration: Rich ecosystem (Kafka Streams, Flink, Connect)
-CONS (+)
-  * Overhead: Operational complexity
-  * Cost: Costly at low/variable volume
-```
+#### PROS (+)
+* **Debugging:** Event streaming with replay/rewind.
+* **Scalability:** High throughput.
+* **Consistency:** Strict ordering per partition.
+* **Integration:** Rich ecosystem (Kafka Streams, Flink, Connect).
 
-AWS SQS
+#### CONS (-)
+* **Overhead:** Operational complexity.
+* **Cost:** Costly at low/variable volume.
 
-```
-PROS (+)
-  * Simplicity: Fully managed, zero ops
-  * Cost: Pay-per-request pricing
-  * Reliability: DLQs and retries built-in
-  * Security: IAM integration + per-queue isolation
-  * Automation: Tight AWS integration (Lambda, Step Functions)
-CONS (+)
-  * Duplication: At-least-once delivery only
-```
+---
+### AWS SQS
+
+#### PROS (+)
+* **Simplicity:** Fully managed, zero ops.
+* **Cost:** Pay-per-request pricing.
+* **Reliability:** DLQs and retries built-in.
+* **Security:** IAM integration + per-queue isolation.
+* **Automation:** Tight AWS integration (Lambda, Step Functions).
+
+#### CONS (-)
+* **Duplication:** At-least-once delivery only.
+
 
 ## Redis (Self-Hosted) vs AWS Elastic Cache
 
-Redis
 
-```
-PROS (+)
-  * Performance: Redis offers multiple methods for caching data, which can significantly reduce data access latency and increase throughput.
-CONS (+)
-  * Cost: Redis clustering solutions needs to be done in-house and requires a significant amount of effort.
-```
+### Redis (Self-Hosted)
 
-AWS Elastic Cache
+#### PROS (+)
+* **Performance:** Redis offers multiple methods for caching data, which can significantly reduce data access latency and increase throughput.
 
-```
-PROS (+)
-  * Setup and Maintenance: ElastiCache is a fully managed AWS service for Redis, not necessary to deal with ec2 instances and configs to install Redis.
-CONS (+)
-  * Limitations: ElastiCache runs only within the Amazon Web Services ecosystem, you may be concerned about vendor lock-in
-```
+#### CONS (-)
+* **Cost:** Redis clustering solutions needs to be done in-house and requires a significant amount of effort.
 
 ---
 
+### AWS Elastic Cache
+
+#### PROS (+)
+* **Setup and Maintenance:** ElastiCache is a fully managed AWS service for Redis, not necessary to deal with ec2 instances and configs to install Redis.
+
+#### CONS (-)
+* **Limitations:** ElastiCache runs only within the Amazon Web Services ecosystem, you may be concerned about vendor lock-in.
+
+
 ## Tradeoffs Auth0 vs Ory Hydra+Kratos
+### AUTH0
 
-AUTH0
+#### PROS (+)
+* **Setup:** Fully managed SaaS, quick setup with minimal configuration.
+* **Features:** Comprehensive auth solution (login UI, MFA, social/enterprise SSO, user management, all included).
+* **Integrations:** Extensive pre-built integrations (100+ social/enterprise providers, SDKs for all major platforms).
+* **Compliance:** SOC 2, ISO 27001, GDPR-compliant out of the box.
+* **Developer Experience:** Rich documentation, pre-built UI components (Universal Login), extensive SDK ecosystem.
+* **Time-to-Market:** Near-instant deployment, no infrastructure management.
 
-```
-PROS (+)
-  * Setup: Fully managed SaaS, quick setup with minimal configuration.
-  * Features: Comprehensive auth solution (login UI, MFA, social/enterprise SSO, user management, all included).
-  * Integrations: Extensive pre-built integrations (100+ social/enterprise providers, SDKs for all major platforms).
-  * Compliance: SOC 2, ISO 27001, GDPR-compliant out of the box.
-  * Developer Experience: Rich documentation, pre-built UI components (Universal Login), extensive SDK ecosystem.
-  * Time-to-Market: Near-instant deployment, no infrastructure management.
+#### CONS (-)
+* **Cost:** Expensive at scale (pricing based on MAUs, can reach $10K+/month for high volume).
+* **Vendor Lock-in:** Proprietary APIs and data models make migration challenging.
+* **Customization:** Limited control over core flows, infrastructure, and data storage location.
+* **Performance & control:** Latency and behavior tied to Auth0 regions and infrastructure; limited tuning.
+* **Data Sovereignty:** User data stored in Auth0's infrastructure (compliance risk in some regions).
+* **Flexibility:** Difficult to implement non-standard OAuth flows or custom business logic.
 
-CONS (-)
-  * Cost: Expensive at scale (pricing based on MAUs, can reach $10K+/month for high volume).
-  * Vendor Lock-in: Proprietary APIs and data models make migration challenging.
-  * Customization: Limited control over core flows, infrastructure, and data storage location.
-  * Performance & control: Latency and behavior tied to Auth0 regions and infrastructure; limited tuning.
-  * Data Sovereignty: User data stored in Auth0's infrastructure (compliance risk in some regions).
-  * Flexibility: Difficult to implement non-standard OAuth flows or custom business logic.
-```
+---
+### ORY (HYDRA + KRATOS)
 
-ORY (HYDRA + KRATOS)
+#### PROS (+)
+* **Cost:** Open source (Apache 2.0), self-hosted = free for unlimited users. Ory Network offers managed option.
+* **Control:** Full control over infrastructure, data residency, deployment topology.
+* **Feature Completeness:** Hydra (OAuth2/OIDC) + Kratos (identity/user management, registration, login, recovery, MFA, profile management).
+* **Customization:** Complete flexibility in UI/UX design, business logic, custom auth flows, and user journey.
+* **Standards Compliance:** Strict OAuth 2.0 and OpenID Connect implementation (Hydra is certified).
+* **Performance:** Deploy in your VPC/regions for optimal latency and data locality.
+* **Scalability:** Battle-tested at scale (millions of users), horizontal scaling, stateless architecture.
+* **Modularity:** Use both together or separately; integrate with existing systems; swap components as needed.
 
-```
-PROS (+)
-  * Cost: Open source (Apache 2.0), self-hosted = free for unlimited users. Ory Network offers managed option.
-  * Control: Full control over infrastructure, data residency, deployment topology.
-  * Feature Completeness: Hydra (OAuth2/OIDC) + Kratos (identity/user management, registration, login, recovery, MFA, profile management).
-  * Customization: Complete flexibility in UI/UX design, business logic, custom auth flows, and user journey.
-  * Standards Compliance: Strict OAuth 2.0 and OpenID Connect implementation (Hydra is certified).
-  * Performance: Deploy in your VPC/regions for optimal latency and data locality.
-  * Scalability: Battle-tested at scale (millions of users), horizontal scaling, stateless architecture.
-  * Modularity: Use both together or separately; integrate with existing systems; swap components as needed.
+#### CONS (-)
+* **Setup Complexity:** Requires configuring two services (Hydra + Kratos) and building/customizing UIs using pre-built components.
+* **Operations:** Self-hosting means managing infrastructure, databases, monitoring, updates, security patches for both services.
+* **Integration Work:** Social logins and enterprise SSO require configuration and custom integration code.
+* **Support:** Community support only (unless paying for Ory Network or enterprise support).
+* **Time-to-Market:** Longer initial setup and customization compared to turnkey SaaS solutions.
 
-CONS (-)
-  * Setup Complexity: Requires configuring two services (Hydra + Kratos) and building/customizing UIs using pre-built components.
-  * Operations: Self-hosting means managing infrastructure, databases, monitoring, updates, security patches for both services.
-  * Integration Work: Social logins and enterprise SSO require configuration and custom integration code.
-  * Support: Community support only (unless paying for Ory Network or enterprise support).
-  * Time-to-Market: Longer initial setup and customization compared to turnkey SaaS solutions.
-```
 
 ## Tradeoffs SQL vs NoSql
 
-SQL — Tradeoffs
+### SQL
 
-```
-PROS (+)
-  * Consistency: Strong ACID guarantees, perfect for enforcing rules like `UNIQUE (election_id, voter_id)`.
-  * Integrity: Native constraints (FK, UNIQUE, CHECK) prevent invalid states by design.
-  * Transactions: Multi-row and multi-table transactions ensure atomic operations.
-  * Joins: Efficient relational queries across users, voter identities, elections, and votes.
-  * Maturity: Tooling, monitoring, migrations, and operational stability are excellent.
-  * Auditability: Ideal for systems where every write must be traceable and deterministic.
+#### PROS (+)
+* **Consistency:** Strong ACID guarantees, perfect for enforcing rules like `UNIQUE (election_id, voter_id)`.
+* **Integrity:** Native constraints (FK, UNIQUE, CHECK) prevent invalid states by design.
+* **Transactions:** Multi-row and multi-table transactions ensure atomic operations.
+* **Joins:** Efficient relational queries across users, voter identities, elections, and votes.
+* **Maturity:** Tooling, monitoring, migrations, and operational stability are excellent.
+* **Auditability:** Ideal for systems where every write must be traceable and deterministic.
 
-CONS (-)
-  * Scalability: Horizontal sharding is more complex than in many NoSQL databases.
-  * Operational Overhead: Large relational schemas require careful indexing and tuning.
-  * Flexibility: Schema changes (migrations) are more rigid and may require downtime windows.
-  * Cost: At massive scale, distributed SQL clusters (e.g., Cockroach, Yugabyte) can be expensive.
-  * Write Throughput: Not optimized for extremely high write rates per second (e.g., billions/hour) without sharding.
-```
+#### CONS (-)
+* **Scalability:** Horizontal sharding is more complex than in many NoSQL databases.
+* **Operational Overhead:** Large relational schemas require careful indexing and tuning.
+* **Flexibility:** Schema changes (migrations) are more rigid and may require downtime windows.
+* **Cost:** At massive scale, distributed SQL clusters (e.g., Cockroach, Yugabyte) can be expensive.
+* **Write Throughput:** Not optimized for extremely high write rates per second (e.g., billions/hour) without sharding.
 
-NoSQL — Tradeoffs
+---
 
-```
-PROS (+)
-  * Scalability: Designed for effortless horizontal scaling and very high write throughput.
-  * Availability: Prioritizes uptime and partition tolerance (AP in CAP theorem).
-  * Flexibility: Schema-less models allow rapid iteration without migrations.
-  * Cost: Commodity hardware, auto-sharding, and simple replication can reduce infrastructure cost.
-  * Distribution: Multi-region replication and low-latency access are usually built-in.
+### NoSql
 
-CONS (-)
-  * Native Consistency: Lacks strong ACID semantics by default; eventual consistency is common.
-  * Uniqueness: No native support for constraints like `UNIQUE (election_id, voter_id)` across shards.
-  * Transactions: Limited or nonexistent multi-document or multi-collection transactions.
-  * Integrity: Application must enforce invariants — error-prone and unsafe for voting systems.
-  * Querying: Complex relational queries and joins are not supported or require manual composition.
-  * Auditability: Harder to guarantee deterministic, tamper-proof, append-only records.
+#### PROS (+)
+* **Scalability:** Designed for effortless horizontal scaling and very high write throughput.
+* **Availability:** Prioritizes uptime and partition tolerance (AP in CAP theorem).
+* **Flexibility:** Schema-less models allow rapid iteration without migrations.
+* **Cost:** Commodity hardware, auto-sharding, and simple replication can reduce infrastructure cost.
+* **Distribution:** Multi-region replication and low-latency access are usually built-in.
 
-```
+#### CONS (-)
+* **Native Consistency:** Lacks strong ACID semantics by default; eventual consistency is common.
+* **Uniqueness:** No native support for constraints like `UNIQUE (election_id, voter_id)` across shards.
+* **Transactions:** Limited or nonexistent multi-document or multi-collection transactions.
+* **Integrity:** Application must enforce invariants — error-prone and unsafe for voting systems.
+* **Querying:** Complex relational queries and joins are not supported or require manual composition.
+* **Auditability:** Harder to guarantee deterministic, tamper-proof, append-only records.
 
 X-Ray x Jaeger
 
