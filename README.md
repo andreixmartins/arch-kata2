@@ -9,10 +9,19 @@ Build a voting system for a huge tv show or event where 300 Million people might
 1. Realtime voting
 2. 250.000 request per second
 3. Secure against bots, hackers
-4. Availability, Realibility
+4. Availability, Realibility, Scalability
 5. Request one vote per person
 6. Realtime results
 
+- Restrictions
+
+  - Serverless
+  - MongoDB
+  - On-premise infrastructure
+  - Google Cloud & Microsoft Azure
+  - OpenShift
+  - Mainframes
+  - Monolithic architectures
 
 ### 2. 🎯 Goals
 
@@ -23,20 +32,14 @@ Build a voting system for a huge tv show or event where 300 Million people might
 - **Stay Online:** Even if part of the system breaks, the rest must keep working so people can still vote.
 - **No Double voting:** We need to make sure nobody votes twice.
 
-Recommended Learning: http://diego-pacheco.blogspot.com/2020/05/education-vs-learning.html
 
 ### 3. 🎯 Non-Goals
-
-List in form of bullets what non-goals do have. Here it's great to have 5-10 lines.
-Example:
 
 - **No monolith:** We won't build one giant block of software. We will break it into small pieces so it's easier to manage.
 - **No mainframes:** We wont use mainframe computers or keep servers in our own office. We will use Cloud (AWS).
 - **No Heavy Business Logic:** The app won't calculate totals or validate global vote limits; it remains a "thin client" focused on UI and local input validation.
 - **No Local Truth:** Local storage (Hive/SharedPrefs) will not be the source of truth for a "successful vote"—only the server's signed acknowledgment counts.
 - **No Custom Cryptography:** We won’t build our own encryption algorithms; we will strictly use platform-standard Secure Enclave (iOS) and Keystore (Android).
-
-Recommended Reading: http://diego-pacheco.blogspot.com/2021/01/requirements-are-dangerous.html
 
 ### 📐 3. Principles
 
