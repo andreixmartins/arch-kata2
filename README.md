@@ -69,7 +69,11 @@ Here there will be a bunch of diagrams, to understand the solution.
 
 🗂️ 5.3 Use Cases
 
-<img src="images/use-case.png">
+<img src="images/use-case1.png">
+
+<img src="images/use-case2.png">
+
+<img src="images/use-case3.png">
 
 ### 🧭 6. Trade-offs
 
