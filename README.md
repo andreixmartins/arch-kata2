@@ -1029,11 +1029,10 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/
   3. ballot is required.
   4. The election must be in open status.
   5. A user can submit only one vote per election.
-  6. Response code success must be 201 Created.
+  6. Response code success must be 200 Ok.
   7. Response code failure for invalid request body must be 400 Bad Request.
   8. Response code failure for unauthorized access must be 401 Unauthorized.
   9. Response code failure for election closed must be 403 Forbidden.
-  10. Response code failure for duplicate vote must be 409 Conflict.
   - headers
 
   ```json
