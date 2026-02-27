@@ -58,16 +58,16 @@ List in form of bullets what design principles you want to be followed, it's gre
 
 Here there will be a bunch of diagrams, to understand the solution.
 
-🗂️ 5.1 Overall architecture: Show the big picture, relationship between macro components.
+🗂️ 5.1 Overall architecture
 
 <img src="images/overall_diagram_simple_v2.png">
 
 
-🗂️ 5.2 Deployment: Show the infra in a big picture.
+🗂️ 5.2 Deployment
 
 <img src="images/deployment.png">
 
-🗂️ 5.3 Deployment: Show the infra in a big picture.
+🗂️ 5.3 Use Cases
 
 <img src="images/use-case.png">
 
