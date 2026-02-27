@@ -77,6 +77,27 @@ Here there will be a bunch of diagrams, to understand the solution.
 
 ### 🧭 6. Trade-offs
 
+```
+1. One mobile code base - Mobile and web applications should be developed in Flutter to handle Web, IOS and Android versions.
+2. Backend application should be built using microservices separated by schema/domains instead of serveless approach.
+3. Cache - Use AWS Elastic cache instead of Redis
+```
+
+Tradeoffs:
+
+```
+1. Flutter vs Native
+2. AWS ECS on Fargate vs AWS EKS on Fargate
+3. AWS RDS PostgreSQL vs AWS DynamoDB
+4. AWS MSK (KAFKA) vs AWS SQS
+5. Redis (Self-Hosted) vs AWS Elastic Cache
+6. Auth0 vs Ory Hydra+Kratos
+7. SQL vs NoSql
+8. X-Ray vs Jaeger
+
+```
+
+
 ### 1. CloudFront + WAF
 
 **Purpose**: Content delivery network and application firewall for DDoS protection and global distribution.
@@ -444,42 +465,6 @@ However, the **cost (~$51K/month) is substantial** and may be prohibitive for sm
 
 For most use cases, a **phased approach** starting with smaller configurations and scaling based on actual traffic is recommended. Consider Aurora Serverless v2, fewer replicas, and smaller instance types initially to reduce costs by 50-65% while maintaining the architectural benefits.
 
-🗂️ 4.2 Deployment: Show the infra in a big picture.
-
-<img src="images/deployment_diagram.png">
-
-🗂️ 4.3 Use Cases: Make 1 macro use case diagram that list the main capability that needs to be covered.
-
-<img src="images/use_case_diagram_v2.png">
-
-Recommended Reading: http://diego-pacheco.blogspot.com/2020/10/uml-hidden-gems.html
-
-### 🧭 5. Trade-offs
-
-List the tradeoffs analysis, comparing pros and cons for each major decision.
-Before you need list all your major decisions, them run tradeoffs on than.
-example:
-Major Decisions:
-
-```
-1. One mobile code base - Mobile and web applications should be developed in Flutter to handle Web, IOS and Android versions.
-2. Backend application should be built using microservices separated by schema/domains instead of serveless approach.
-3. Cache - Use AWS Elastic cache instead of Redis
-```
-
-Tradeoffs:
-
-```
-1. Flutter vs Native
-2. AWS ECS on Fargate vs AWS EKS on Fargate
-3. AWS RDS PostgreSQL vs AWS DynamoDB
-4. AWS MSK (KAFKA) vs AWS SQS
-5. Redis (Self-Hosted) vs AWS Elastic Cache
-6. Auth0 vs Ory Hydra+Kratos
-7. SQL vs NoSql
-8. X-Ray vs Jaeger
-
-```
 
 ## Flutter vs Native
 
