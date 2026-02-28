@@ -60,7 +60,7 @@ Here there will be a bunch of diagrams, to understand the solution.
 
 🗂️ 5.1 Overall architecture
 
-<img src="images/overall_diagram_simple_v2.png">
+<img src="images/final-aws-massive-voter-system.png">
 
 
 🗂️ 5.2 Deployment
