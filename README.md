@@ -87,16 +87,17 @@ Tradeoffs:
 
 ```
 1. Flutter vs Native
-2. AWS ECS on Fargate vs AWS EKS on Fargate
-3. AWS RDS PostgreSQL vs AWS DynamoDB
-4. AWS MSK (KAFKA) vs AWS SQS
-5. Redis (Self-Hosted) vs AWS Elastic Cache
-6. Auth0 vs Ory Hydra+Kratos
-7. SQL vs NoSql
-8. X-Ray vs Jaeger
+2. Route53 vs CloudFlare
+3. CloudFront vs Akamai 
+4. AWS ECS on Fargate vs AWS EKS on Fargate
+5. AWS RDS PostgreSQL vs AWS DynamoDB
+6. AWS MSK (KAFKA) vs AWS SQS
+7. Redis (Self-Hosted) vs AWS Elastic Cache
+8. Auth0 vs Ory Hydra+Kratos
+9. SQL vs NoSql
+10. X-Ray vs Jaeger
 
 ```
-
 
 ## Flutter vs Native
 
@@ -133,7 +134,67 @@ Tradeoffs:
 - **Slower Feature Parity:** Releases may diverge if one platform receives updates sooner than the other.
 - **Higher Development Cost:** Requires specialized skills in both ecosystems (Swift and Kotlin).
 
-## Computation Scale
+
+---
+
+## Route53 vs CloudFlare
+
+### Route 53
+
+#### PROS (+)
+
+- **Latency-based routing** Using healthcheck precisely select the best region in AWS with automatic failover support.
+- **Disaster Recovering** Prevent DNS failures with global resolution it can quickly relocate to a different region in AWS when required.
+
+  
+#### CONS (-)
+
+- **Vendor Lock-in** When used with integration features like Latency-based routing is AWS-centric.
+- **Multi-Cloud** Except when used as purely DNS solution.
+
+### CloudFare
+
+#### PROS (+)
+
+- **World Top Ranking** Fastest Global DNS resolution.
+- **DNSSEC and DDOS detection** preventing man-in-the-middle filtering dns, prevent attacks absorbs massive traffic spikes as a shield.
+- **Better for Multi-cloud** Better choice when requirement needs multi-cloud solution, less dependency of proprietary protocols.
+
+#### CONS (-)
+
+- **Orange Cloud** advanced features requires subscription on cloudflare infraestructure.
+- **Routing and healthcheck** Less routing (geolocation, latency) rules and less flexible when compared with Route 53 for AWS integration.
+
+---
+
+## CloudFront vs Akamai 
+
+### CloudFront
+
+#### PROS (+)
+
+- **High Availability** Globally distributed edge network, automatic failover to secondary origins, no infrastructure to manage
+- **Security** WAF integration geolocation restriction, DDos Protection via AWS Shield.
+
+#### CONS (-)
+
+- **Vendor Lock-in** Strong AWS coupling, IAM integration makes migration even harder.
+- **Pricing Complexity** price varies between regions, extra features have an additional cost, the first 1000 cache misses are free. 
+
+### Akamai
+
+#### PROS (+)
+
+- **Global Reach** Extremely mature global presence 20+ edge infraestructure evolution.
+- **Multi-Cloud**  Works independently of any cloud, easier in hybrid or multi-cloud strategies
+
+#### CONS (-)
+
+- **Higher Cost** Overkill for small and middle systems best suited for large enterprises with negotiation leverage.
+
+---
+  
+## AWS ECS on Fargate vs AWS EKS on Fargate
 
 ### AWS EKS on Fargate
 
