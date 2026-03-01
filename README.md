@@ -56,8 +56,6 @@ List in form of bullets what design principles you want to be followed, it's gre
 
 ### 🏗️ 5. Overall Diagrams
 
-Here there will be a bunch of diagrams, to understand the solution.
-
 🗂️ 5.1 Overall architecture
 
 <img src="images/final-aws-massive-voter-model.png">
@@ -438,73 +436,6 @@ Tradeoffs:
 - **Complexity:** Requires managing storage, scaling, and retention.
 - **Maintenance:** Upgrades and tuning are your responsibility.
 - **Indirect cost:** Infrastructure and operational overhead.
-
-# AWS API Gateway
-
-## Overall
-
-Amazon API Gateway is an AWS service for creating, publishing, maintaining, monitoring, and securing REST, HTTP,
-and WebSocket APIs at any scale. API developers can create APIs that access AWS or other web services, as well as
-data stored in the AWS Cloud. As an API Gateway API developer, you can create APIs for use in your own client applications.
-
-- Scalability Gateway limits
-  - Default: 10,000 RPS
-  - Burst: 5,000 requests
-  - Can request limit increases via AWS Support (service quotas).
-  - These throttle limits protect the entire service — if you exceed them, you will see error 429 (Too Many Requests).
-
-- Throttle quota of entire AWS structure without access control per account per Region for a portal
-  - 250,000 requests per second
-
-These values can be increased?
-
-1. Request a quota increase
-
-- Using Service Quotas
-- AWS typically allocates 100k+ RPS for large workloads
-
-2. Distribute load by region
-
-- Each region has its own limit (you can use 20000 RPS splitting traffic between 5 regions for example)
-- Very common approach in global architectures
-
-3. Use CloudFront in front of the API Gateway
-
-- Caching drastically reduces the number of requests
-- CloudFront does not count as a direct request to the API Gateway if cached
-
-Link for Amazon API Gateway quotas: https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html
-
-## Data size limits
-
-- Payload (request/response body)
-  - Maximum payload size: 10 MB — this is a hard limit set by API Gateway and cannot be increased.
-  - For larger files, you can use S3 pre-signed URLs.
-
-- HTTP Headers
-  - Combined size of HTTP headers and lines: up to 10,240 bytes (approx. ~10 KB).
-
-## Integration timeout
-
-- By default, the maximum time the API Gateway expects for a response from your integration (e.g., Lambda, HTTP service, etc.) is approximately 29 seconds.
-- This limit can be increased (upon request), especially for REST and private APIs, but may require adjustments to other quotas.
-
-## Usage controls applicable by API or API Key
-
-In addition to global account limits, you can set limits per API or per customer using Usage Plans:
-
-- Set rate limits (requests/sec) per API key
-- Set quotas per period (e.g., 100,000 requests per day)
-- These per-client applied rules help control API access and usage.
-
-## WebSocket Specific (Per API):
-
-- Routes per API: 300 (can be increased).
-- Stages per API: 10 (can be increased).
-- Connections: No hard limit on concurrent connections, but there is a limit on new connections per second (around 500, adjustable).
-
-PS: Be careful to not confuse problem with explanation.
-<BR/>Recommended reading: http://diego-pacheco.blogspot.com/2023/07/tradeoffs.html
 
 ### 🌏 6. For each key major component
 
