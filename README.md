@@ -143,27 +143,27 @@ Tradeoffs:
 
 #### PROS (+)
 
-- **Latency-based routing** Using healthcheck precisely select the best region in AWS with automatic failover support.
-- **Disaster Recovering** Prevent DNS failures with global resolution it can quickly relocate to a different region in AWS when required.
+- **Latency-based routing:** Using healthcheck precisely select the best region in AWS with automatic failover support.
+- **Disaster Recovering:** Prevent DNS failures with global resolution it can quickly relocate to a different region in AWS when required.
 
   
 #### CONS (-)
 
-- **Vendor Lock-in** When used with integration features like Latency-based routing is AWS-centric.
-- **Multi-Cloud** Except when used as purely DNS solution.
+- **Vendor Lock-in:** When used with integration features like Latency-based routing is AWS-centric.
+- **Multi-Cloud:** Except when used as purely DNS solution.
 
 ### CloudFare
 
 #### PROS (+)
 
-- **World Top Ranking** Fastest Global DNS resolution.
-- **DNSSEC and DDOS detection** preventing man-in-the-middle filtering dns, prevent attacks absorbs massive traffic spikes as a shield.
-- **Better for Multi-cloud** Better choice when requirement needs multi-cloud solution, less dependency of proprietary protocols.
+- **World Top Ranking:** Fastest Global DNS resolution.
+- **DNSSEC and DDOS detection:** preventing man-in-the-middle filtering dns, prevent attacks absorbs massive traffic spikes as a shield.
+- **Better for Multi-cloud:** Better choice when requirement needs multi-cloud solution, less dependency of proprietary protocols.
 
 #### CONS (-)
 
-- **Orange Cloud** advanced features requires subscription on cloudflare infraestructure.
-- **Routing and healthcheck** Less routing (geolocation, latency) rules and less flexible when compared with Route 53 for AWS integration.
+- **Orange Cloud:** advanced features requires subscription on cloudflare infraestructure.
+- **Routing and healthcheck:** Less routing (geolocation, latency) rules and less flexible when compared with Route 53 for AWS integration.
 
 ---
 
@@ -173,24 +173,24 @@ Tradeoffs:
 
 #### PROS (+)
 
-- **High Availability** Globally distributed edge network, automatic failover to secondary origins, no infrastructure to manage
-- **Security** WAF integration geolocation restriction, DDos Protection via AWS Shield.
+- **High Availability:** Globally distributed edge network, automatic failover to secondary origins, no infrastructure to manage
+- **Security:** WAF integration geolocation restriction, DDos Protection via AWS Shield.
 
 #### CONS (-)
 
-- **Vendor Lock-in** Strong AWS coupling, IAM integration makes migration even harder.
-- **Pricing Complexity** price varies between regions, extra features have an additional cost, the first 1000 cache misses are free. 
+- **Vendor Lock-in:** Strong AWS coupling, IAM integration makes migration even harder.
+- **Pricing Complexity:** price varies between regions, extra features have an additional cost, the first 1000 cache misses are free. 
 
 ### Akamai
 
 #### PROS (+)
 
-- **Global Reach** Extremely mature global presence 20+ edge infraestructure evolution.
-- **Multi-Cloud**  Works independently of any cloud, easier in hybrid or multi-cloud strategies
+- **Global Reach:** Extremely mature, global presence more than 20 years of edge infraestructure evolution.
+- **Multi-Cloud:**  Works independently of any cloud, easier in hybrid or multi-cloud strategies
 
 #### CONS (-)
 
-- **Higher Cost** Overkill for small and middle systems best suited for large enterprises with negotiation leverage.
+- **Higher Cost:** Overkill for small and middle systems best suited for large enterprises with negotiation leverage.
 
 ---
   
