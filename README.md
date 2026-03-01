@@ -879,17 +879,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FL
 
 ---
 
-- AWS POSTGRESQL REPORT TABLE
-
-```sql
-CREATE TABLE reports (
-    id SERIAL PRIMARY KEY, -- SERIAL to auto-increment as a primary key
-    user_id STRING NOT NULL, -- UUID User id comming from Cassandra tables
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Date to inform when the report was generated
-    report_type VARCHAR(50) NOT NULL, -- Column to inform the report type - BILLING, DOJOS, USERS
-    modified_at TIMESTAMP -- Last modification timestamp
-);
-```
 
 #### 6.4 - Algorithms/Data Structures : Specific algos that need to be used, along size with spesific data structures.
 
@@ -926,7 +915,6 @@ Explain the techniques, principles, types of tests and will be performaned, and 
 - **Unit Testing:** Validates business logic and state managers (BLoCs/Providers) to ensure vote processing and local validation logic are mathematically sound.
 - **Widget Testing:** Verifies individual UI components (buttons, input fields) in isolation to ensure they render correctly and respond to user interactions without a full app boot.
 - **Integration Testing:** Executes end-to-end flows on physical devices to test the handshake between Flutter and Native modules (Biometrics/Secure Storage).
-- **Performance Testing:** Uses Flutter DevTools to profile frame rates (FPS) and memory usage, ensuring no "jank" occurs when processing real-time results at 250k/sec.
 - **Security Testing:** Focuses on the OAuth2/PKCE flow and ensures that biometric data is never stored locally and that the "one-vote-per-user" lock cannot be bypassed.
 - **Usability Testing:** Leverages Flutter’s Semantics and accessibility tools to ensure the voting interface is clear and usable for all users under the pressure of a live event.
 - **Mocking Data:** We use Mockito or Mocktail to stub API responses, simulating "success," "conflict" (already voted), and "unauthorized" scenarios without hitting live servers.
@@ -943,8 +931,6 @@ Explain the techniques, principles,types of observability that will be used, key
 - Metrics dashboards should contain errors,alert identifying any service errors
 
 ### 🖹 10. Data Store Designs
-
-For each different kind of data store i.e (Postgres, Memcached, Elasticache, S3, Neo4J etc...) describe the schemas, what would be stored there and why, main queries, expectations on performance. Diagrams are welcome but you really need some dictionaries.
 
 - AWS S3 for videos, images, text files, reports
 - AWS RDS Postgres for structured data
