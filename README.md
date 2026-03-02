@@ -944,16 +944,15 @@ Explain the techniques, principles,types of observability that will be used, key
 
 Describe your stack, what databases would be used, what servers, what kind of components, mobile/ui approach, general architecture components, frameworks and libs to be used or not be used and why.
 
-- Frontend: Flutter (see Frontend Architecture section)
-- Native channels: Kotlin (Android) / Swift (iOS)
+- Frontend: Flutter
 - Security: OAuth2 + OIDC (PKCE), Biometrics
-- Language: Java 23
+- Language: Java 25
 - Framework: Spring Boot 3
 - Container: Docker
 - Orchestration: EKS Kubernetes
 - API: REST
 - Auth: OAuth2 + JWT
-- Databases: AWS Keyspaces (Cassandra) PostgreSQL + Redis
+- Databases: DynamoDB + PostgreSQL + ElasticCache
 - Messaging: Kafka (AWS MSK)
 - CI/CD: GitHub Actions + ArgoCD
 - Monitoring: Prometheus + Grafana
