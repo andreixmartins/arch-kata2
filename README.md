@@ -440,6 +440,8 @@ Tradeoffs:
 | **Identity**           | **Ory (Hydra + Kratos):** Selected over Auth0 to avoid prohibitive costs at 300M users and to ensure full **data sovereignty** and control over the authentication infrastructure.            |
 | **Persistence Model**  | **Polyglot (NoSQL + SQL):** Utilizes **NoSQL (DynamoDB)** for massive write throughput on votes, while retaining **SQL (PostgreSQL)** for strict consistency in user identity management.     |
 | **Observability**      | **AWS X-Ray:** Preferred over Jaeger for its **seamless integration** with AWS Lambda/EKS and zero-maintenance managed infrastructure. Grafana, Loki and Prometheus are using in the services |
+| **Security**           | **AWS Managing services & WAF:** Selected as fully **managed services** to provide robust DDoS protection and traffic filtering, ensuring high availability during critical voting windows.   |
+| **Storage**            | **Amazon S3:** Chosen for storing finalized election results (vote tally) and audit exports due to its unmatched **durability**, scalability, and low cost for static assets.                 |
 
 # Endpoints:
 
