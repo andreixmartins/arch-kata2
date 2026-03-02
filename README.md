@@ -320,7 +320,6 @@ Tradeoffs:
 - **Setup:** Fully managed SaaS, quick setup with minimal configuration.
 - **Features:** Comprehensive auth solution (login UI, MFA, social/enterprise SSO, user management, all included).
 - **Integrations:** Extensive pre-built integrations (100+ social/enterprise providers, SDKs for all major platforms).
-- **Compliance:** SOC 2, ISO 27001, GDPR-compliant out of the box.
 - **Developer Experience:** Rich documentation, pre-built UI components (Universal Login), extensive SDK ecosystem.
 - **Time-to-Market:** Near-instant deployment, no infrastructure management.
 
@@ -343,7 +342,6 @@ Tradeoffs:
 - **Control:** Full control over infrastructure, data residency, deployment topology.
 - **Feature Completeness:** Hydra (OAuth2/OIDC) + Kratos (identity/user management, registration, login, recovery, MFA, profile management).
 - **Customization:** Complete flexibility in UI/UX design, business logic, custom auth flows, and user journey.
-- **Standards Compliance:** Strict OAuth 2.0 and OpenID Connect implementation (Hydra is certified).
 - **Performance:** Deploy in your VPC/regions for optimal latency and data locality.
 - **Scalability:** Battle-tested at scale (millions of users), horizontal scaling, stateless architecture.
 - **Modularity:** Use both together or separately; integrate with existing systems; swap components as needed.
