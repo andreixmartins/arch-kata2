@@ -553,35 +553,36 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=OPEN</span>
 
 - Endpoint to get the elections available.
-  1. Authorization header with valid Bearer token is required.
-  2. Fields: name, starts_at, ends_at, and at least one contestant are required.
-  3. Response code success must be 201 Created
-  4. Response code failure for invalid fields must be 400 Bad Request
-  5. Response code failure for unauthorized must be 401 Unauthorized
-  6. Response code failure for forbidden operation must be 403 Forbidden.
-  - headers
+1. Authorization header with valid Bearer token is required.
+2. Fields: name, starts_at, ends_at, and at least one contestant are required.
+3. Response code success must be 201 Created
+4. Response code failure for invalid fields must be 400 Bad Request
+5. Response code failure for unauthorized must be 401 Unauthorized
+6. Response code failure for forbidden operation must be 403 Forbidden.
 
-  ```json
-  {
-    "Authorization": "Bearer access_token"
-  }
-  ```
+   - headers
 
-  - response
+   ```json
+   {
+     "Authorization": "Bearer access_token"
+   }
+   ```
 
-  ```json
-  {
-    "elections": [
-      {
-        "election_id": "uuid",
-        "name": "Election Name",
-        "status": "OPEN",
-        "starts_at": "2026-02-01T10:10:00Z",
-        "ends_at": "2026-04-01T10:10:00Z"
-      }
-    ]
-  }
-  ```
+   - response
+
+   ```json
+   {
+     "elections": [
+       {
+         "election_id": "uuid",
+         "name": "Election Name",
+         "status": "OPEN",
+         "starts_at": "2026-02-01T10:10:00Z",
+         "ends_at": "2026-04-01T10:10:00Z"
+       }
+     ]
+   }
+   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>Get voting options</span>
 
@@ -589,37 +590,38 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}</span>
 
 - Endpoint to get the participants of the elections
-  1. Authorization header with valid Bearer token is required.
-  2. Response code success must be 200 Ok
-  3. Response code failure for invalid fields must be 400 Bad Request
-  4. Response code failure for unauthorized must be 401 Unauthorized
-  5. Response code failure for forbidden operation must be 403 Forbidden.
-  - headers
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
+   
+   - headers
 
-  ```json
-  {
-    "Authorization": "Bearer access_token"
-  }
-  ```
+   ```json
+   {
+     "Authorization": "Bearer access_token"
+   }
+   ```
 
-  - response
+   - response
 
-  ```json
-  {
-    "election_id": "uuid",
-    "name": "Election Name",
-    "vote_payload": {
-      "participants": [
-        {
-          "name": "Participant 1 name"
-        },
-        {
-          "name": "Participant 2 name"
-        }
-      ]
-    }
-  }
-  ```
+   ```json
+   {
+     "election_id": "uuid",
+     "name": "Election Name",
+     "vote_payload": {
+       "participants": [
+         {
+           "name": "Participant 1 name"
+         },
+         {
+           "name": "Participant 2 name"
+         }
+       ]
+     }
+   }
+   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>USER CHOOSES VOTING OPTIONS</span>
 
@@ -629,38 +631,39 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/submit</span>
 
 - Endpoint to get submit the vote
-  1. Authorization header with valid Bearer token is required.
-  2. Response code success must be 200 Ok
-  3. Response code failure for invalid fields must be 400 Bad Request
-  4. Response code failure for unauthorized must be 401 Unauthorized
-  5. Response code failure for forbidden operation must be 403 Forbidden.
-  - headers
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
 
-  ```json
-  {
-    "Authorization": "Bearer access_token"
-  }
-  ```
+   - headers
 
-  - request
+   ```json
+   {
+     "Authorization": "Bearer access_token"
+   }
+   ```
 
-  ```json
-  {
-    "election_id": "uuid",
-    "voter_id": "uuid",
-    "vote_payload": {
-      "participant_id": "1234",
-      "participant_name": "Participant Name"
-    }
-  ```
+   - request
 
-  -response
+   ```json
+   {
+     "election_id": "uuid",
+     "voter_id": "uuid",
+     "vote_payload": {
+       "participant_id": "1234",
+       "participant_name": "Participant Name"
+     }
+   ```
 
-  ```json
-  {
-    "receipt_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-  }
-  ```
+   -response
+
+   ```json
+   {
+     "receipt_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   }
+   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>USER VOTING CONFIRMATION</span>
 
@@ -670,31 +673,32 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}/{voter_id}</span>
 
 - Endpoint to get Information about the vote
-  1. Authorization header with valid Bearer token is required.
-  2. Response code success must be 200 Ok
-  3. Response code failure for invalid fields must be 400 Bad Request
-  4. Response code failure for unauthorized must be 401 Unauthorized
-  5. Response code failure for forbidden operation must be 403 Forbidden.
-  - headers
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
 
-  ```json
-  {
-    "Authorization": "Bearer access_token"
-  }
-  ```
+   - headers
 
-  -response
+   ```json
+   {
+     "Authorization": "Bearer access_token"
+   }
+   ```
 
-  ```json
-  {
-    "status": "vote_confirmed",
-    "vote_payload": {
-      "participant_id": "1234",
-      "participant_name": "Participant Name"
-    },
-    "timestamp": "2026-02-01T10:10:00Z"
-  }
-  ```
+   -response
+
+   ```json
+   {
+     "status": "vote_confirmed",
+     "vote_payload": {
+       "participant_id": "1234",
+       "participant_name": "Participant Name"
+     },
+     "timestamp": "2026-02-01T10:10:00Z"
+   }
+   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>SYSTEM VOTING CONFIRMATION</span>
 
@@ -704,28 +708,29 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}</span>
 
 - Endpoint to get Information about the vote
-  1. Authorization header with valid Bearer token is required.
-  2. Response code success must be 202 Accepted
-  3. Response code failure for invalid fields must be 400 Bad Request
-  4. Response code failure for unauthorized must be 401 Unauthorized
-  5. Response code failure for forbidden operation must be 403 Forbidden.
-  - headers
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 202 Accepted
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
 
-  ```json
-  {
-    "Authorization": "Bearer access_token"
-  }
-  ```
+   - headers
 
-  -response
+   ```json
+   {
+     "Authorization": "Bearer access_token"
+   }
+   ```
 
-  ```json
-  {
-    "status": "vote_successfully_recorded",
-    "vote_id": "abc123",
-    "timestamp": "2026-02-01T10:00:00Z"
-  }
-  ```
+   -response
+
+   ```json
+   {
+     "status": "vote_successfully_recorded",
+     "vote_id": "abc123",
+     "timestamp": "2026-02-01T10:00:00Z"
+   }
+   ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>ACCESS ADMIN WORKSPACE</span>
 
