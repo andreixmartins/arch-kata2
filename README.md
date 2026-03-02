@@ -1012,8 +1012,11 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 #### 6.4 - Algorithms/Data Structures : Specific algos that need to be used, along size with spesific data structures.
 
-- **Replay**
-- **Back-Pressure**
+- **Circuit breaker Pattern**
+- **Retry with backoff**
+- **Queue for message notifications**
+- **Redis SET data structure for POCs Caching**
+
 
 ### 🖹 7. Migrations
 
