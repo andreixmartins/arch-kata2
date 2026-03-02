@@ -760,10 +760,42 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections?status=
   ]
   ```
 
+### <span style='color:#3BC143 ;font-weight: bold;'>SEARCH POLL BY LOCATION</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/poll/{country}</span>
+
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
+
+- headers
+
+  ```json
+  {
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+-response
+  ```json
+    [
+      {
+        "election_id": "uuid",
+        "name": "ElectionName",
+        "status": "closed",
+        "ends_at": "2026-02-01T10:00:00Z",
+        "total_votes": 250000000
+      }
+    ]
+  ```
+
 ### <span style='color:#3BC143 ;font-weight: bold;'>SELECT POLL INFORMATION</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/{election_id}</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/poll/{election_id}</span>
 
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 200 Ok
@@ -794,7 +826,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/{electi
 ### <span style='color:#3BC143 ;font-weight: bold;'>DISPLAY POLL INFORMATION</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/{election_id}/stats</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/poll/{election_id}/stats</span>
 
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 200 Ok
@@ -823,7 +855,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/{electi
 ### <span style='color:#3BC143 ;font-weight: bold;'>EXPORT POLL INFORMATION TO S3</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/{election_id}/exports</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/poll/{election_id}/exports</span>
 
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 200 Ok
