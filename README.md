@@ -553,13 +553,13 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=OPEN</span>
 
 - Endpoint to get the elections available.
+
 1. Authorization header with valid Bearer token is required.
 2. Fields: name, starts_at, ends_at, and at least one contestant are required.
 3. Response code success must be 201 Created
 4. Response code failure for invalid fields must be 400 Bad Request
 5. Response code failure for unauthorized must be 401 Unauthorized
 6. Response code failure for forbidden operation must be 403 Forbidden.
-
    - headers
 
    ```json
@@ -590,12 +590,12 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}</span>
 
 - Endpoint to get the Contestants of the elections
+
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 200 Ok
 3. Response code failure for invalid fields must be 400 Bad Request
 4. Response code failure for unauthorized must be 401 Unauthorized
 5. Response code failure for forbidden operation must be 403 Forbidden.
-   
    - headers
 
    ```json
@@ -635,12 +635,12 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/submit</span>
 
 - Endpoint to get submit the vote
+
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 200 Ok
 3. Response code failure for invalid fields must be 400 Bad Request
 4. Response code failure for unauthorized must be 401 Unauthorized
 5. Response code failure for forbidden operation must be 403 Forbidden.
-
    - headers
 
    ```json
@@ -676,12 +676,12 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}/{voter_id}</span>
 
 - Endpoint to get Information about the vote
+
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 200 Ok
 3. Response code failure for invalid fields must be 400 Bad Request
 4. Response code failure for unauthorized must be 401 Unauthorized
 5. Response code failure for forbidden operation must be 403 Forbidden.
-
    - headers
 
    ```json
@@ -711,12 +711,12 @@ method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}</span>
 
 - Endpoint to get Information about the vote
+
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 202 Accepted
 3. Response code failure for invalid fields must be 400 Bad Request
 4. Response code failure for unauthorized must be 401 Unauthorized
 5. Response code failure for forbidden operation must be 403 Forbidden.
-
    - headers
 
    ```json
@@ -943,6 +943,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ### **users**
 
+| Field          | Type    | NOT NULL | Default   | Description                                   |
+| -------------- | ------- | -------- | --------- | --------------------------------------------- |
+| userId         | UUID    | YES      | generated | Primary key                                   |
+| authProvider   | String  | YES      | —         | Authentication provider (Google, Apple, etc.) |
+| authProviderId | String  | YES      | —         | Unique ID from provider                       |
+| email          | String  | NO       | —         | Optional contact email                        |
+| phone          | String  | NO       | —         | Optional contact phone                        |
+| createdAt      | Instant | YES      | now()     | Creation timestamp                            |
+| modifiedAt     | Instant | NO       | —         | Last modification timestamp                   |
+
 ```json
 {
   "User": {
@@ -956,16 +966,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
   }
 }
 ```
-
-| Field          | Type    | NOT NULL | Default   | Description                                   |
-| -------------- | ------- | -------- | --------- | --------------------------------------------- |
-| userId         | UUID    | YES      | generated | Primary key                                   |
-| authProvider   | String  | YES      | —         | Authentication provider (Google, Apple, etc.) |
-| authProviderId | String  | YES      | —         | Unique ID from provider                       |
-| email          | String  | NO       | —         | Optional contact email                        |
-| phone          | String  | NO       | —         | Optional contact phone                        |
-| createdAt      | Instant | YES      | now()     | Creation timestamp                            |
-| modifiedAt     | Instant | NO       | —         | Last modification timestamp                   |
 
 ---
 
@@ -982,14 +982,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
   }
 }
 ```
-
-| Field        | Type    | NOT NULL | Default   | Description                            |
-| ------------ | ------- | -------- | --------- | -------------------------------------- |
-| voterId      | UUID    | YES      | generated | Primary key                            |
-| userId       | UUID    | YES      | —         | FK → User(userId)                      |
-| identityHash | String  | YES      | —         | Hashed identity used for deduplication |
-| createdAt    | Instant | YES      | now()     | Creation timestamp                     |
-| modifiedAt   | Instant | NO       | —         | Last modification timestamp            |
 
 ---
 
@@ -1009,16 +1001,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 }
 ```
 
-| Field      | Type           | NOT NULL | Default   | Description                 |
-| ---------- | -------------- | -------- | --------- | --------------------------- |
-| electionId | UUID           | YES      | generated | Primary key                 |
-| name       | String         | YES      | —         | Election display name       |
-| status     | ElectionStatus | YES      | —         | draft                       |
-| startsAt   | Instant        | NO       | —         | Voting start timestamp      |
-| endsAt     | Instant        | NO       | —         | Voting end timestamp        |
-| createdAt  | Instant        | YES      | now()     | Creation timestamp          |
-| modifiedAt | Instant        | NO       | —         | Last modification timestamp |
-
 ---
 
 ### **votes**
@@ -1037,19 +1019,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
   }
 }
 ```
-
-> **Constraint:** UNIQUE (electionId, voterId) → Enforces one vote per voter per election
-
-| Field       | Type    | NOT NULL | Default   | Description                 |
-| ----------- | ------- | -------- | --------- | --------------------------- |
-| voteId      | UUID    | YES      | generated | Primary key                 |
-| electionId  | UUID    | YES      | —         | FK → Election(electionId)   |
-| voterId     | UUID    | YES      | —         | FK → VoterIdentity(voterId) |
-| timestamp   | Instant | YES      | now()     | Vote submission time        |
-| receiptHash | String  | YES      | —         | Unique vote receipt         |
-| votePayload | JSON    | YES      | —         | Encrypted/anonymized ballot |
-| createdAt   | Instant | YES      | now()     | Creation timestamp          |
-| updatedAt   | Instant | NO       | —         | Last update timestamp       |
 
 ---
 
