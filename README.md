@@ -589,7 +589,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=OPEN</s
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}</span>
 
-- Endpoint to get the participants of the elections
+- Endpoint to get the Contestants of the elections
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 200 Ok
 3. Response code failure for invalid fields must be 400 Bad Request
@@ -656,8 +656,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/submit</span>
      "election_id": "uuid",
      "voter_id": "uuid",
      "vote_payload": {
-       "participant_id": "1234",
-       "participant_name": "Participant Name"
+       "contestant_id": "1234"
      }
    ```
 
@@ -697,8 +696,8 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}/{voter_i
    {
      "status": "vote_confirmed",
      "vote_payload": {
-       "participant_id": "1234",
-       "participant_name": "Participant Name"
+       "contestant_id": "1234",
+       "contestant_name": "Contestant Name"
      },
      "timestamp": "2026-02-01T10:10:00Z"
    }
