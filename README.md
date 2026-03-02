@@ -991,10 +991,10 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 ```
 
 | Field      | Type           | NOT NULL | Default   | Description                 |
-| ---------- | -------------- | -------- | --------- | --------------------------- | ---- | ------ |
+| ---------- | -------------- | -------- | --------- | --------------------------- |
 | electionId | UUID           | YES      | generated | Primary key                 |
 | name       | String         | YES      | —         | Election display name       |
-| status     | ElectionStatus | YES      | —         | draft                       | open | closed |
+| status     | ElectionStatus | YES      | —         | draft                       |
 | startsAt   | Instant        | NO       | —         | Voting start timestamp      |
 | endsAt     | Instant        | NO       | —         | Voting end timestamp        |
 | createdAt  | Instant        | YES      | now()     | Creation timestamp          |
