@@ -930,7 +930,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ## 6.3 Persistence Model
 
-### **users**
+### **user**
 
 | Field          | Type    | NOT NULL | Default   | Description                                   |
 | -------------- | ------- | -------- | --------- | --------------------------------------------- |
@@ -941,6 +941,39 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 | phone          | String  | NO       | —         | Optional contact phone                        |
 | createdAt      | Instant | YES      | now()     | Creation timestamp                            |
 | modifiedAt     | Instant | NO       | —         | Last modification timestamp                   |
+
+```
+Purpose
+- Stores application user identity and profile linkage data
+- Maps internal user identity to external authentication providers
+
+Primary Key
+- PK: userId (String, UUID)
+
+Sort Key
+- None
+
+Attributes
+- userId           : String | Required | Internal unique user identifier (UUID)
+- authProvider     : String | Required | Authentication provider name (e.g. GOOGLE, APPLE)
+- authProviderId   : String | Required | Provider-specific unique user ID
+- email            : String | Optional | User email address
+- phone            : String | Optional | User phone number
+- createdAt        : String | Required | Creation timestamp in ISO-8601 format
+- modifiedAt       : String | Optional | Last update timestamp in ISO-8601 format
+
+Global Secondary Indexes
+- auth-provider-id-index
+  - PK: authProvider
+  - SK: authProviderId
+  - Purpose: find a user by external provider identity
+
+Optional Global Secondary Indexes
+- email-index
+  - PK: email
+  - Purpose: find a user by email, if email lookup is a real access pattern
+```
+
 
 ```json
 {
@@ -958,7 +991,34 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ---
 
-### **voter_identities**
+### **voter_identity**
+
+```
+Table: VoterIdentity
+
+Purpose
+- Stores the application’s voter identity record
+- Links an internal user to a voter identity
+- Supports deduplication through a hashed real-world identity value
+
+Primary Key
+- PK: voterId (String, UUID)
+
+Sort Key
+- None
+
+Attributes
+- voterId        : String | Required | Internal unique voter identifier (UUID)
+- userId         : String | Required | Owning application user identifier
+- identityHash   : String | Required | Hashed real identity used for deduplication
+- createdAt      : String | Required | Creation timestamp in ISO-8601 format
+- modifiedAt     : String | Optional | Last update timestamp in ISO-8601 format
+
+Global Secondary Indexes
+- user-id-index
+  - PK: userId
+  - Purpose: find the voter identity record(s) for a user
+```
 
 ```json
 {
@@ -971,10 +1031,44 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
   }
 }
 ```
-
 ---
 
-### **elections**
+### **election**
+
+```
+Table: Election
+
+Purpose
+- Stores election metadata and lifecycle state
+- Supports election administration and status-based discovery
+- Tracks opening/closing schedule for voting windows
+
+Primary Key
+- PK: electionId (String, UUID)
+
+Sort Key
+- createdAt
+
+Attributes
+- electionId   : String | Required | Internal unique election identifier (UUID)
+- name         : String | Required | Election display name
+- status       : String | Required | Election lifecycle state: draft | open | closed
+- startsAt     : String | Optional | Voting start timestamp in ISO-8601 format
+- endsAt       : String | Optional | Voting end timestamp in ISO-8601 format
+- createdAt    : String | Required | Creation timestamp in ISO-8601 format
+- modifiedAt   : String | Optional | Last update timestamp in ISO-8601 format
+
+Global Secondary Indexes
+- status-startsAt-index
+  - PK: status
+  - SK: startsAt
+  - Purpose: list elections by status, ordered by start time
+
+- status-endsAt-index
+  - PK: status
+  - SK: endsAt
+  - Purpose: find elections by status and closing time
+```
 
 ```json
 {
@@ -992,7 +1086,43 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ---
 
-### **votes**
+### **vote**
+
+```
+Table: Vote
+
+Purpose
+- Stores submitted votes
+- Persists ballot receipt metadata and encrypted/anonymized ballot payload
+- Supports vote retrieval, audit lookups, and election-level aggregation workflows
+
+Primary Key
+- PK: voteId (String, UUID)
+
+Sort Key
+- electionId
+
+Attributes
+- voteId         : String   | Required | Internal unique vote identifier (UUID)
+- electionId     : String   | Required | Election identifier
+- voterId        : String   | Required | Voter identity identifier
+- timestamp      : String   | Required | Vote submission timestamp in ISO-8601 format
+- receiptHash    : String   | Required | Unique vote receipt hash
+- votePayload    : Map/String | Required | Encrypted/anonymized ballot payload
+- createdAt      : String   | Required | Creation timestamp in ISO-8601 format
+- updatedAt      : String   | Optional | Last update timestamp in ISO-8601 format
+
+Global Secondary Indexes
+- election-timestamp-index
+  - PK: electionId
+  - SK: timestamp
+  - Purpose: query votes for one election in time order
+
+- voter-timestamp-index
+  - PK: voterId
+  - SK: timestamp
+  - Purpose: query a voter voting history / audit activity
+```
 
 ```json
 {
