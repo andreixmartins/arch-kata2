@@ -545,7 +545,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=OPEN</s
 - Endpoint to get the elections available.
 
 1. Authorization header with valid Bearer token is required.
-2. Fields: name, starts_at, ends_at, and at least one contestant are required.
+2. Fields: name, starts_at, ends_at are required.
 3. Response code success must be 201 Created
 4. Response code failure for invalid fields must be 400 Bad Request
 5. Response code failure for unauthorized must be 401 Unauthorized
@@ -700,7 +700,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}/{voter_i
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}</span>
 
-- Endpoint to get Information about the vote
 
 1. Authorization header with valid Bearer token is required.
 2. Response code success must be 202 Accepted
