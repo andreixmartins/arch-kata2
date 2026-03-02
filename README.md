@@ -926,14 +926,14 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ```json
 {
-  "users": {
-    "user_id": "uuid", // Primary key, NOT NULL, default: gen_random_uuid(), 16 bytes
-    "auth_provider": "text", // NOT NULL, e.g. Google, Apple
-    "auth_provider_id": "text", // NOT NULL, unique per provider (external auth ID)
-    "email": "text", // Optional contact, nullable
-    "phone": "text", // Optional contact, nullable
-    "created_at": "timestamptz", // NOT NULL, default: now(), creation timestamp
-    "modified_at": "timestamptz" // Nullable, last modification timestamp
+  "User": {
+    "userId": "UUID", // Primary key, NOT NULL
+    "authProvider": "String", // NOT NULL, e.g. Google, Apple
+    "authProviderId": "String", // NOT NULL, unique per provider
+    "email": "String", // Optional
+    "phone": "String", // Optional
+    "createdAt": "Instant", // NOT NULL, default: now()
+    "modifiedAt": "Instant" // Nullable, last update timestamp
   }
 }
 ```
@@ -944,12 +944,12 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ```json
 {
-  "voter_identities": {
-    "voter_id": "uuid", // Primary key (global voter identity), NOT NULL, default: gen_random_uuid()
-    "user_id": "uuid", // NOT NULL, FK -> users(user_id)
-    "identity_hash": "text", // NOT NULL, hashed real identity for deduplication
-    "created_at": "timestamptz", // NOT NULL, default: now(), creation timestamp
-    "modified_at": "timestamptz" // Nullable, last modification timestamp
+  "VoterIdentity": {
+    "voterId": "UUID", // Primary key, NOT NULL
+    "userId": "UUID", // NOT NULL, FK -> User(userId)
+    "identityHash": "String", // NOT NULL, hashed real identity for deduplication
+    "createdAt": "Instant", // NOT NULL, default: now()
+    "modifiedAt": "Instant" // Nullable, last update timestamp
   }
 }
 ```
@@ -960,13 +960,14 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ```json
 {
-  "elections": {
-    "election_id": "uuid", // Primary key, NOT NULL, default: gen_random_uuid()
-    "name": "text", // NOT NULL, election/display name
-    "status": "text", // NOT NULL, values: draft | open | closed
-    "starts_at": "timestamptz", // Nullable, when voting starts
-    "ends_at": "timestamptz", // Nullable, when voting ends
-    "modified_at": "timestamptz" // Nullable, last modification timestamp
+  "Election": {
+    "electionId": "UUID", // Primary key, NOT NULL
+    "name": "String", // NOT NULL, election display name
+    "status": "ElectionStatus", // NOT NULL, values: draft | open | closed
+    "startsAt": "Instant", // Nullable, voting start time
+    "endsAt": "Instant", // Nullable, voting end time
+    "createdAt": "Instant", // NOT NULL, default: now()
+    "modifiedAt": "Instant" // Nullable, last update timestamp
   }
 }
 ```
@@ -977,15 +978,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ```json
 {
-  "votes": {
-    "vote_id": "uuid", // Primary key, NOT NULL, default: gen_random_uuid()
-    "election_id": "uuid", // NOT NULL, FK -> elections(election_id)
-    "voter_id": "uuid", // NOT NULL, FK -> voter_identities(voter_id)
-    "vote_payload": "jsonb", // NOT NULL, encrypted/anonymized ballot
-    "timestamp": "timestamptz", // NOT NULL, default: now(), vote submission time
-    "receipt_hash": "text", // NOT NULL, unique vote receipt
-    "modified_at": "timestamptz", // Nullable, last modification timestamp
-    "uq_election_voter": "(election_id, voter_id)" // UNIQUE constraint, enforces one vote per person per election
+  "Vote": {
+    "voteId": "UUID", // Primary key, NOT NULL
+    "electionId": "UUID", // NOT NULL, FK -> Election(electionId)
+    "voterId": "UUID", // NOT NULL, FK -> VoterIdentity(voterId)
+    "timestamp": "Instant", // NOT NULL, vote submission time
+    "receiptHash": "String", // NOT NULL, unique vote receipt
+    "votePayload": "JSON", // NOT NULL, encrypted/anonymized ballot
+    "createdAt": "Instant", // NOT NULL, default: now()
+    "updatedAt": "Instant" // Nullable, last update timestamp
+    // UNIQUE (electionId, voterId) -> enforces one vote per person per election
   }
 }
 ```
