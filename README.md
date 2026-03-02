@@ -1013,11 +1013,13 @@ Attributes
 - identityHash   : String | Required | Hashed real identity used for deduplication
 - createdAt      : String | Required | Creation timestamp in ISO-8601 format
 - modifiedAt     : String | Optional | Last update timestamp in ISO-8601 format
+- electionShdKey : String   | Required | Election Sharding key
 
 Global Secondary Indexes
-- user-id-index
-  - PK: userId
-  - Purpose: find the voter identity record(s) for a user
+- election-sharded-index
+  - PK: electionShdKey
+  - SK: timestamp
+  - Purpose: query votes for one election in time order
 ```
 
 ```json
@@ -1028,6 +1030,7 @@ Global Secondary Indexes
     "identityHash": "String", // NOT NULL, hashed real identity for deduplication
     "createdAt": "Instant", // NOT NULL, default: now()
     "modifiedAt": "Instant" // Nullable, last update timestamp
+    "electionShdKey": "String" // NOT NULL, Election Sharding key
   }
 }
 ```
