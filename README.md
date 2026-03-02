@@ -67,6 +67,8 @@ Build a voting system for a huge tv show or event where 300 Million people might
 
 <img src="images/use-case3.png">
 
+<img width="1104" height="908" alt="wireframe-use-cases" src="https://github.com/user-attachments/assets/94b60d0e-2999-4df3-88b4-3e0c2a6d5b9e" />
+
 ### 🧭 6. Trade-offs
 
 ```
@@ -1034,9 +1036,6 @@ Explain the techniques, principles, types of tests and will be performaned, and 
 - Performance testing - Tests the software to determine its performance characteristics such as speed, scalability, and stability.
 - Security testing – Tests the software to identify vulnerabilities and ensure it meets security requirements.
 - Usability testing – Tests the software to evaluate its user-friendliness and ease of use.
-
-<img width="1104" height="908" alt="wireframe-use-cases" src="https://github.com/user-attachments/assets/94b60d0e-2999-4df3-88b4-3e0c2a6d5b9e" />
-
 
 ### Frontend Testing Strategy
 
