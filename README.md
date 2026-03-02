@@ -920,7 +920,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 - We must use REST API
 - We must use AWS Gateway
 
-#### 6.3 Persistence Model
+## 6.3 Persistence Model
 
 ### **users**
 
