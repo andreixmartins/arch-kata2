@@ -63,7 +63,7 @@ Build a voting system for a huge tv show or event where 300 Million people might
 
 <img src="images/use-case1.png">
 
-<img src="images/use-case2.png">
+<img src="images/use-case02.png">
 
 <img src="images/use-case3.png">
 
