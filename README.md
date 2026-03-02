@@ -43,8 +43,6 @@ Build a voting system for a huge tv show or event where 300 Million people might
 
 ### 📐 4. Principles
 
-List in form of bullets what design principles you want to be followed, it's great to have 5-10 lines.
-
 1. **Security:** Security is non-negotiable; all components must have security controls in place.
 2. **Event-Driven Architecture:** Use asynchronous ingestion via a message broker (kafka/sqs) to decouple high-velocity writes from processing.
 4. **Optimistic UI Updates:** Provide the user with immediate visual confirmation of their vote while the actual sync happens asynchronously in the background.
@@ -132,7 +130,6 @@ Tradeoffs:
 - **Slower Feature Parity:** Releases may diverge if one platform receives updates sooner than the other.
 - **Higher Development Cost:** Requires specialized skills in both ecosystems (Swift and Kotlin).
 
-
 ---
 
 ## Route53 vs CloudFlare
@@ -144,7 +141,6 @@ Tradeoffs:
 - **Latency-based routing:** Using healthcheck precisely select the best region in AWS with automatic failover support.
 - **Disaster Recovering:** Prevent DNS failures with global resolution it can quickly relocate to a different region in AWS when required.
 
-  
 #### CONS (-)
 
 - **Vendor Lock-in:** When used with integration features like Latency-based routing is AWS-centric.
@@ -324,7 +320,6 @@ Tradeoffs:
 - **Setup:** Fully managed SaaS, quick setup with minimal configuration.
 - **Features:** Comprehensive auth solution (login UI, MFA, social/enterprise SSO, user management, all included).
 - **Integrations:** Extensive pre-built integrations (100+ social/enterprise providers, SDKs for all major platforms).
-- **Compliance:** SOC 2, ISO 27001, GDPR-compliant out of the box.
 - **Developer Experience:** Rich documentation, pre-built UI components (Universal Login), extensive SDK ecosystem.
 - **Time-to-Market:** Near-instant deployment, no infrastructure management.
 
@@ -347,7 +342,6 @@ Tradeoffs:
 - **Control:** Full control over infrastructure, data residency, deployment topology.
 - **Feature Completeness:** Hydra (OAuth2/OIDC) + Kratos (identity/user management, registration, login, recovery, MFA, profile management).
 - **Customization:** Complete flexibility in UI/UX design, business logic, custom auth flows, and user journey.
-- **Standards Compliance:** Strict OAuth 2.0 and OpenID Connect implementation (Hydra is certified).
 - **Performance:** Deploy in your VPC/regions for optimal latency and data locality.
 - **Scalability:** Battle-tested at scale (millions of users), horizontal scaling, stateless architecture.
 - **Modularity:** Use both together or separately; integrate with existing systems; swap components as needed.
