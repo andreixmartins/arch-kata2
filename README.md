@@ -446,19 +446,6 @@ Tradeoffs:
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>LOGIN INTO USER ACCOUNT</span>
 
-#### <span style='color:#3BC143 ;font-weight: bold;'>Login flow calls</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login/api</span>
-
-- response
-
-```json
-{
-  "id": "fc1e197b-52c3-49c2-a4e7-db4b8122ecc7"
-}
-```
-
 #### <span style='color:#3BC143 ;font-weight: bold;'>Submit login credentials</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
