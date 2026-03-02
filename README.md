@@ -938,7 +938,7 @@ Explain the techniques, principles,types of observability that will be used, key
 - Stores the actual immutable votes and aggregated results.
 
 3. Amazon ElasticCache 
-- Serves the real-time voute counts to the connected clients.
+- Serves the real-time aggregated results.
 
 ### 🖹 11. Technology Stack
 
