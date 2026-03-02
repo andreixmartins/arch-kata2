@@ -443,317 +443,9 @@ What is a majore component? A service, a lambda, a important ui, a generalized a
 
 # Endpoints:
 
-### <span style='color:#3BC143 ;font-weight: bold;'>AUTHENTICATION</span>
+### <span style='color:#3BC143 ;font-weight: bold;'>LOGIN INTO USER ACCOUNT</span>
 
-method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/oauth</span>
-
-- User authentication endpoint usually used to identify the current user session and fetch user data.
-  Response must return the user_id, access_token, refresh_token, expires_in and token_type.
-  1. provider and provider_token are required fields
-  2. Response code success must be 200 OK.
-  3. Response code failure for invalid token must be 401 Unauthorized.
-  - request
-
-  ```json
-  {
-    "provider": "string",
-    "provider_token": "string"
-  }
-  ```
-
-  - response
-
-  ```json
-  {
-    "user_id": "string",
-    "access_token": "string",
-    "refresh_token": "string",
-    "expires_in": "Integer",
-    "token_type": "string"
-  }
-  ```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>REFRESH TOKEN</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/auth/refresh</span>
-
-- This endpoint issues a new access token when the current access token expires.
-  The client must provide a valid refresh token previously issued during authentication.
-  1. refresh_token is required.
-  2. Response code success must be 200 OK.
-  3. Response code failure for invalid token must be 401 Unauthorized.
-  - request
-
-  ```json
-  {
-    "refresh_token": "string"
-  }
-  ```
-
-  - response
-
-  ```json
-  {
-    "access_token": "string",
-    "expires_in": "string",
-    "token_type": "string"
-  }
-  ```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>CREATE ELECTION</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections</span>
-
-- Endpoint to create a new voting election.
-  1. Authorization header with valid Bearer token is required.
-  2. Fields: name, starts_at, ends_at, and at least one contestant are required.
-  3. Response code success must be 201 Created
-  4. Response code failure for invalid fields must be 400 Bad Request
-  5. Response code failure for unauthorized must be 401 Unauthorized
-  6. Response code failure for forbidden operation must be 403 Forbidden.
-  - headers
-
-  ```json
-  {
-    "Authorization": "Bearer access_token"
-  }
-  ```
-
-  - request
-
-  ```json
-  {
-    "name": "string",
-    "starts_at": "string",
-    "ends_at": "string",
-    "contestants": [
-      {
-        "name": "string",
-        "description": "string",
-        "image_url": "string"
-      }
-    ]
-  }
-  ```
-
-  - response
-
-  ```json
-  {
-    "election_id": "string",
-    "name": "string",
-    "status": "string",
-    "starts_at": "string",
-    "ends_at": "string",
-    "contestants": [
-      {
-        "contestant_id": "string",
-        "name": "string"
-      }
-    ]
-  }
-  ```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>LIST ELECTIONS</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=open</span>
-
-- Endpoint used to retrieve a list of elections available in the system.
-  The results can be filtered by election status (open, closed).
-  1. Status must be one of (open, closed).
-  2. Response code success must be 200 OK.
-  3. Response code failure for invalid query parameter must be 400 Bad Request.
-
-- response
-
-  ```json
-  {
-    "elections": [
-      {
-        "election_id": "string",
-        "name": "string",
-        "status": "string",
-        "starts_at": "string",
-        "ends_at": "string"
-      }
-    ]
-  }
-  ```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>GET ELECTION LEADERBOARD</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/leaderboard</span>
-
-- Endpoint to get the leaderboard of a given election.
-  1. election_id path parameter is required.
-  2. Response code success must be 200 OK
-  3. Response code failure for election not found must be 404 Not Found.
-  - response
-
-  ```json
-  {
-    "election_id": "string",
-    "name": "string",
-    "status": "string",
-    "last_updated_at": "String",
-    "leaderboard": [
-      {
-        "contestant_id": "string",
-        "name": "string",
-        "total_votes": "Integer",
-        "percentage": "Number"
-      }
-    ]
-  }
-  ```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>GET CONTESTANTS LIST</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/contestants</span>
-
-- Endpoint to get the list of contestants for a given election.
-  1. election_id path parameter is required.
-  2. Response code success must be 200 OK.
-  3. Response code failure for invalid election_id format must be 400 Bad Request.
-  4. Response code failure for election not found must be 404 Not Found.
-  - response
-
-  ```json
-  {
-    "election_id": "string",
-    "name": "string",
-    "status": "string",
-    "starts_at": "string",
-    "ends_at": "string",
-    "contestants": [
-      {
-        "contestant_id": "string",
-        "name": "string",
-        "description": "string",
-        "image_url": "string"
-      }
-    ]
-  }
-  ```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>SUBMIT A VOTE</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections/{election_id}/votes</span>
-
-- Endpoint to submit a vote for a given election.
-  1. Authorization header with valid Bearer token is required.
-  2. Idempotency-Key header is required.
-  3. ballot is required.
-  4. The election must be in open status.
-  5. A user can submit only one vote per election.
-  6. Response code success must be 200 Ok.
-  7. Response code failure for invalid request body must be 400 Bad Request.
-  8. Response code failure for unauthorized access must be 401 Unauthorized.
-  9. Response code failure for election closed must be 403 Forbidden.
-  - headers
-
-  ```json
-  {
-    "Authorization": "Bearer access_token",
-    "Idempotency-Key": "string"
-  }
-  ```
-
-  - request
-
-  ```json
-  {
-    "ballot": {
-      "contestant_id": "string"
-    },
-    "client_timestamp": "string",
-    "meta": {
-      "device_id": "string",
-      "app_version": "string"
-    }
-  }
-  ```
-
-  - response
-
-  ```json
-  {
-    "vote_id": "string",
-    "submited_at": "string"
-  }
-  ```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>Hydra - OAuth flow</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/admin/clients</span>
-
-- Grants our application access (called only once)
-  - headers
-
-  ```json
-  {
-    "Content-Type": "Application/json"
-  }
-  ```
-
-  - request
-
-  ```json
-  {
-    "client_id": "voter-app",
-    "grant_types": ["authorization_code", "refresh_token"],
-    "response_types": ["code"],
-    "scope": "openid profile email vote:cast offline_access",
-    "redirect_uris": ["http://localhost:3001/auth/exchange"],
-    "token_endpoint_auth_method": "none"
-  }
-  ```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - register flow calls</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/registration/api</span>
-
-- response
-
-```json
-{
-  "id": "fc1e197b-52c3-49c2-a4e7-db4b8122ecc7"
-}
-```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - submit registration</span>
-
-method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/registration?flow=FLOW_ID</span>
-
-- headers
-
-```json
-{
-  "Content-Type": "Application/json"
-}
-```
-
-- request
-
-```json
-{
-  "method": "password",
-  "traits": { "email": "voter@example.com" },
-  "password": "StrADSgPass123!"
-}
-```
-
-### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - login flow calls</span>
+#### <span style='color:#3BC143 ;font-weight: bold;'>Login flow calls</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login/api</span>
@@ -766,7 +458,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login/api</sp
 }
 ```
 
-### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - submit login</span>
+#### <span style='color:#3BC143 ;font-weight: bold;'>Submit login credentials</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FLOW_ID</span>
@@ -797,17 +489,262 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FL
 }
 ```
 
-### <span style='color:#3BC143 ;font-weight: bold;'>Kratos - validate session token</span>
+#### <span style='color:#3BC143 ;font-weight: bold;'>Exchange code for token</span>
 
-method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FLOW_ID</span>
+method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/oauth2/token</span>
+
+AUTH_CODE="xyz789"
 
 - headers
 
+```json
+{
+  "Content-Type": "application/x-www-form-urlencoded"
+}
+```
+
+- request
+
+  ```urlencoded
+  grant_type=authorization_code
+  client_id=voter-android
+  code=AUTH_CODE
+  redirect_uri=com.myapp://oauth2redirect
+  ```
+
+#### <span style='color:#3BC143 ;font-weight: bold;'>JWKS endpoint is what Vote API uses to validate access tokens locally</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/.well-known/jwks.json</span>
+
+- headers
+
+```json
+{
+  "Accept": "application/json"
+}
+```
+
+- response
+
+```json
+{
+  "keys": [
+    {
+      "use": "sig",
+      "kty": "RSA",
+      "kid": "97296440-a757-46b9-81c0-9b1f9f11f3ec",
+      "alg": "RS256",
+      "n": "76_44z11arK4utTVIjF2xsQMXV3EHu-ln7T1A7xitn0O21oj1_vZHZuzfNvebOPuXcvF5TYrvR5wVp4jzK49rK7A2a6pNs0wIqt20Z2D55P7f6JaVZnO1ZTgBAT-t4yxc33h4qdwMbVfvTHMjsJ4S2ozSG7yQx4DjgI2bNZ_dH8TS3grKNRcaQTKl4UcSWSCW6ok2Ij_yWKLhjfA1Hc4iEq7WK3PrEhtc3tmQHkuKqZNvtwg_QnnexetEi-rDu1igw6LLjFqxEIT2Ryf4-5fvFSsS8w0cE1aGMUfEbg8_9GzFjav-i7UtjOM1GiwIWyIAr4VV5zxKfxlugoEA56D4dNp-YEOQUYK921uGL03OiHhAcW-MB7QWAIwwt1x34ycE_wOnwzz6D3u8GM0GtfFzzOoLu6cKUroZMTh834yIdLM6ddfb9bppbVH1UeuTDoLWWpKxvKKRrNJDSh_ZlOHaPo0G5nMbnXVgPY2F7e-f0zSLjHPSpjiznYihiztbmPdViBBWGvLlc2ipr4jGSOvTG6-6HHazsfSX3SUFFgvOSzEphNgi50ODJ1HSuV0WPElPhjL3JZxyHejo1scXSJGk64OvPAT8dCbRXEbfXZpvTkxGpegeOPqVTcuBxyd76XiGAmS-rVbfoFEdg19uLiDw9n1_0i-m9OfiQmqZh9ZRrc",
+      "e": "AQAB"
+    }
+  ]
+}
+```
+
+
+### <span style='color:#3BC143 ;font-weight: bold;'>USER CHOOSES VOTING OPTIONS</span>
+
+#### <span style='color:#3BC143 ;font-weight: bold;'>List open elections</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=OPEN</span>
+
+- Endpoint to get the elections available.
+  1. Authorization header with valid Bearer token is required.
+  2. Fields: name, starts_at, ends_at, and at least one contestant are required.
+  3. Response code success must be 201 Created
+  4. Response code failure for invalid fields must be 400 Bad Request
+  5. Response code failure for unauthorized must be 401 Unauthorized
+  6. Response code failure for forbidden operation must be 403 Forbidden.
+  - headers
+
   ```json
   {
-    "Accept": "application/json",
-    "X-Session-Token": "ory_st_5BLHJrBecmHai5eHKsJLd0FhcskLDmi4"
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+  - response
+
+  ```json
+  {
+    "elections":[
+      {
+        "election_id": "uuid",
+        "name": "Election Name",
+        "status": "OPEN",
+        "starts_at": "2026-02-01T10:10:00Z",
+        "ends_at": "2026-04-01T10:10:00Z"
+      }
+    ]
+  }
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>Get voting options</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}</span>
+
+- Endpoint to get the participants of the elections
+  1. Authorization header with valid Bearer token is required.
+  2. Response code success must be 200 Ok
+  3. Response code failure for invalid fields must be 400 Bad Request
+  4. Response code failure for unauthorized must be 401 Unauthorized
+  5. Response code failure for forbidden operation must be 403 Forbidden.
+
+  - headers
+
+  ```json
+  {
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+  - response
+
+  ```json
+  {
+    "election_id": "uuid",
+    "name": "Election Name",
+    "vote_payload": {
+      "participants": [
+        {
+          "name": "Participant 1 name"
+        },
+        {
+          "name": "Participant 2 name"
+        }
+      ]
+    }
+  }
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>USER CHOOSES VOTING OPTIONS</span>
+
+#### <span style='color:#3BC143 ;font-weight: bold;'>Submit vote</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/submit</span>
+
+- Endpoint to get submit the vote
+  1. Authorization header with valid Bearer token is required.
+  2. Response code success must be 200 Ok
+  3. Response code failure for invalid fields must be 400 Bad Request
+  4. Response code failure for unauthorized must be 401 Unauthorized
+  5. Response code failure for forbidden operation must be 403 Forbidden.
+
+  - headers
+
+  ```json
+  {
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+  - request
+
+  ```json
+  {
+    "election_id": "uuid",
+    "voter_id": "uuid",
+    "vote_payload": {}
+  ```
+
+  -response
+  ```json
+  {
+    "receipt_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>USER VOTING CONFIRMATION</span>
+
+#### <span style='color:#3BC143 ;font-weight: bold;'>Get voting information</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}/{voter_id}</span>
+
+- Endpoint to get Information about the vote
+  1. Authorization header with valid Bearer token is required.
+  2. Response code success must be 200 Ok
+  3. Response code failure for invalid fields must be 400 Bad Request
+  4. Response code failure for unauthorized must be 401 Unauthorized
+  5. Response code failure for forbidden operation must be 403 Forbidden.
+
+  - headers
+
+  ```json
+  {
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+  -response
+  ```json
+  {
+    "status": "vote_confirmed",
+    "vote_payload": {},
+    "timestamp": "2026-02-01T10:10:00Z"
+  }
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>SYSTEM VOTING CONFIRMATION</span>
+
+#### <span style='color:#3BC143 ;font-weight: bold;'>Get system voting confirm</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}</span>
+
+- Endpoint to get Information about the vote
+  1. Authorization header with valid Bearer token is required.
+  2. Response code success must be 202 Accepted
+  3. Response code failure for invalid fields must be 400 Bad Request
+  4. Response code failure for unauthorized must be 401 Unauthorized
+  5. Response code failure for forbidden operation must be 403 Forbidden.
+
+  - headers
+
+  ```json
+  {
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+  -response
+  ```json
+  {
+    "status": "vote_successfully_recorded",
+    "vote_id": "abc123",
+    "timestamp": "2026-02-01T10:00:00Z"
+  }
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>OAuth flow</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/admin/clients</span>
+
+- Grants our application access (called only once)
+  - headers
+
+  ```json
+  {
+    "Content-Type": "Application/json"
+  }
+  ```
+
+  - request
+
+  ```json
+  {
+    "client_id": "voter-app",
+    "grant_types": ["authorization_code", "refresh_token"],
+    "response_types": ["code"],
+    "scope": "openid profile email vote:cast offline_access",
+    "redirect_uris": ["http://localhost:3001/auth/exchange"],
+    "token_endpoint_auth_method": "none"
   }
   ```
 
