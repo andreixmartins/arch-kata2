@@ -938,6 +938,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 }
 ```
 
+| Field          | Type    | NOT NULL | Default   | Description                                   |
+| -------------- | ------- | -------- | --------- | --------------------------------------------- |
+| userId         | UUID    | YES      | generated | Primary key                                   |
+| authProvider   | String  | YES      | —         | Authentication provider (Google, Apple, etc.) |
+| authProviderId | String  | YES      | —         | Unique ID from provider                       |
+| email          | String  | NO       | —         | Optional contact email                        |
+| phone          | String  | NO       | —         | Optional contact phone                        |
+| createdAt      | Instant | YES      | now()     | Creation timestamp                            |
+| modifiedAt     | Instant | NO       | —         | Last modification timestamp                   |
+
 ---
 
 ### **voter_identities**
@@ -953,6 +963,14 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
   }
 }
 ```
+
+| Field        | Type    | NOT NULL | Default   | Description                            |
+| ------------ | ------- | -------- | --------- | -------------------------------------- |
+| voterId      | UUID    | YES      | generated | Primary key                            |
+| userId       | UUID    | YES      | —         | FK → User(userId)                      |
+| identityHash | String  | YES      | —         | Hashed identity used for deduplication |
+| createdAt    | Instant | YES      | now()     | Creation timestamp                     |
+| modifiedAt   | Instant | NO       | —         | Last modification timestamp            |
 
 ---
 
@@ -972,6 +990,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 }
 ```
 
+| Field      | Type           | NOT NULL | Default   | Description                 |
+| ---------- | -------------- | -------- | --------- | --------------------------- | ---- | ------ |
+| electionId | UUID           | YES      | generated | Primary key                 |
+| name       | String         | YES      | —         | Election display name       |
+| status     | ElectionStatus | YES      | —         | draft                       | open | closed |
+| startsAt   | Instant        | NO       | —         | Voting start timestamp      |
+| endsAt     | Instant        | NO       | —         | Voting end timestamp        |
+| createdAt  | Instant        | YES      | now()     | Creation timestamp          |
+| modifiedAt | Instant        | NO       | —         | Last modification timestamp |
+
 ---
 
 ### **votes**
@@ -987,10 +1015,22 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
     "votePayload": "JSON", // NOT NULL, encrypted/anonymized ballot
     "createdAt": "Instant", // NOT NULL, default: now()
     "updatedAt": "Instant" // Nullable, last update timestamp
-    // UNIQUE (electionId, voterId) -> enforces one vote per person per election
   }
 }
 ```
+
+> **Constraint:** UNIQUE (electionId, voterId) → Enforces one vote per voter per election
+
+| Field       | Type    | NOT NULL | Default   | Description                 |
+| ----------- | ------- | -------- | --------- | --------------------------- |
+| voteId      | UUID    | YES      | generated | Primary key                 |
+| electionId  | UUID    | YES      | —         | FK → Election(electionId)   |
+| voterId     | UUID    | YES      | —         | FK → VoterIdentity(voterId) |
+| timestamp   | Instant | YES      | now()     | Vote submission time        |
+| receiptHash | String  | YES      | —         | Unique vote receipt         |
+| votePayload | JSON    | YES      | —         | Encrypted/anonymized ballot |
+| createdAt   | Instant | YES      | now()     | Creation timestamp          |
+| updatedAt   | Instant | NO       | —         | Last update timestamp       |
 
 ---
 
