@@ -430,6 +430,18 @@ Tradeoffs:
 ### 🌏 6. For each key major component
 
 What is a majore component? A service, a lambda, a important ui, a generalized approach for all uis, a generazid approach for computing a workload, etc...
+| Component | Technology Choice & Rationale |
+| :--- | :--- |
+| **Frontend Framework** | **Flutter:** Selected over Native to maintain a **single codebase** for iOS, Android, and Web while achieving near-native performance and hardware access (biometrics). |
+| **DNS Routing** | **Amazon Route 53:** Chosen over CloudFlare for its **latency-based routing** and deep integration with AWS regions, ensuring users are directed to the healthiest and closest endpoint. |
+| **CDN** | **Amazon CloudFront:** Preferred over Akamai due to its native integration with **AWS Shield** for DDoS protection and simplified IAM security management within the AWS ecosystem. |
+| **Orchestration** | **AWS EKS on Fargate:** Selected over ECS to leverage the standard **Kubernetes** ecosystem while using Fargate to eliminate node management overhead and ensure pod-level isolation. |
+| **Vote Database** | **Amazon DynamoDB:** Chosen over RDS PostgreSQL for the voting ledger because it offers **single-digit millisecond latency** and unlimited horizontal scalability required for 250k req/s. |
+| **Messaging** | **AWS MSK (Kafka):** Selected over SQS because strict **event ordering** and stream replay capabilities are critical for auditability and data consistency in the voting process. |
+| **Caching** | **Amazon ElastiCache:** Chosen over self-hosted Redis to offload operational maintenance ("fully managed") while providing high-throughput in-memory caching for real-time results. |
+| **Identity** | **Ory (Hydra + Kratos):** Selected over Auth0 to avoid prohibitive costs at 300M users and to ensure full **data sovereignty** and control over the authentication infrastructure. |
+| **Persistence Model** | **Polyglot (NoSQL + SQL):** Utilizes **NoSQL (DynamoDB)** for massive write throughput on votes, while retaining **SQL (PostgreSQL)** for strict consistency in user identity management. |
+| **Tracing** | **AWS X-Ray:** Preferred over Jaeger for its **seamless integration** with AWS Lambda/EKS and zero-maintenance managed infrastructure. |
 
 # Endpoints:
 
