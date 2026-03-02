@@ -889,7 +889,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ## 6.1 - Class Diagram
 
-<img src="images/class_diagram_v3.png">
+<img src="images/class_diagram_v4.png">
 
 ## 6.2 - Contract Documentation
 
