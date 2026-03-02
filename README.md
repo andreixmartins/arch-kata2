@@ -611,16 +611,16 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}</
      "election_id": "uuid",
      "name": "Election Name",
      "vote_payload": {
-       "participants": [
+       "contestants": [
          {
-           "name": "Participant 1 name",
-           "description": "Participant 1 Description",
-           "image": "Participant 1 Image"
+           "name": "Contestant 1 name",
+           "description": "Contestant 1 Description",
+           "image": "Contestant 1 Image"
          },
          {
-           "name": "Participant 2 name",
-           "description": "Participant 2 Description",
-           "image": "Participant 2 Image"
+           "name": "Contestant 2 name",
+           "description": "Contestant 2 Description",
+           "image": "Contestant 2 Image"
          }
        ]
      }
