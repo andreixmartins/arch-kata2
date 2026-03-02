@@ -1017,9 +1017,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ### 🖹 7. Migrations
 
-IF Migrations are required describe the migrations strategy with proper diagrams, text and tradeoffs.
-
-- N/A
+- This is a new voting system architecture, and there is no need for migration.
 
 ### 🖹 8. Testing strategy
 
