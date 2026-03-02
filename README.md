@@ -500,7 +500,8 @@ AUTH_CODE="xyz789"
 
 ```json
 {
-  "Content-Type": "application/x-www-form-urlencoded"
+  "Content-Type": "application/x-www-form-urlencoded",
+  ""
 }
 ```
 
@@ -649,7 +650,10 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/submit</span>
   {
     "election_id": "uuid",
     "voter_id": "uuid",
-    "vote_payload": {}
+    "vote_payload": {
+      "participant_id": "1234",
+      "participant_name": "Participant Name"
+    }
   ```
 
   -response
@@ -685,7 +689,10 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}/{voter_i
   ```json
   {
     "status": "vote_confirmed",
-    "vote_payload": {},
+    "vote_payload": {
+      "participant_id": "1234",
+      "participant_name": "Participant Name"
+    },
     "timestamp": "2026-02-01T10:10:00Z"
   }
   ```
@@ -720,31 +727,161 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}</span>
     "timestamp": "2026-02-01T10:00:00Z"
   }
   ```
+  
+### <span style='color:#3BC143 ;font-weight: bold;'>ACCESS ADMIN WORKSPACE</span>
 
-### <span style='color:#3BC143 ;font-weight: bold;'>OAuth flow</span>
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections?status=draft?status=open?name=ElectionName?starts_after=2026-01-01</span>
 
-method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/admin/clients</span>
+  1. Authorization header with valid Bearer token is required.
+  2. Response code success must be 200 Ok
+  3. Response code failure for invalid fields must be 400 Bad Request
+  4. Response code failure for unauthorized must be 401 Unauthorized
+  5. Response code failure for forbidden operation must be 403 Forbidden.
 
-- Grants our application access (called only once)
   - headers
 
   ```json
   {
-    "Content-Type": "Application/json"
+    "Authorization": "Bearer access_token"
   }
   ```
 
-  - request
+  -response
+  ```json
+  [
+    {
+      "election_id": "uuid",
+      "name": "ElectionName",
+      "status": "OPEN",
+      "starts_at": "2026-02-01T00:00:00Z",
+      "ends_at": "2026-04-01T20:00:00Z"
+    }
+  ]
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>SELECT POLL INFORMATION</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/{election_id}</span>
+
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
+
+- headers
 
   ```json
   {
-    "client_id": "voter-app",
-    "grant_types": ["authorization_code", "refresh_token"],
-    "response_types": ["code"],
-    "scope": "openid profile email vote:cast offline_access",
-    "redirect_uris": ["http://localhost:3001/auth/exchange"],
-    "token_endpoint_auth_method": "none"
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+- response
+  ```json
+  {
+    "election_id": "uuid",
+    "name": "ElectionName",
+    "status": "OPEN",
+    "starts_at": "2026-02-01T00:00:00Z",
+    "ends_at": "2026-04-01T20:00:00Z",
+    "total_votes": 12500000
+  }
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>DISPLAY POLL INFORMATION</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/{election_id}/stats</span>
+
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
+
+  - headers
+
+  ```json
+  {
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+  - response
+    ```json
+    {
+      "total_votes": 12500000,
+      "votes_last_hour": 250000,
+      "status": "OPEN",
+      "participation_rate": 0.62
+    }
+    ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>EXPORT POLL INFORMATION TO S3</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/{election_id}/exports</span>
+
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
+
+- headers
+
+  ```json
+  {
+    "Authorization": "Bearer access_token"
+  }
+  ```
+  
+- request
+  ```json
+  {
+    "format": "csv"
+  }
+  ```
+
+- response
+  ```json
+  {
+    "export_id": "uuid",
+    "status": "processing",
+    "requested_at": "2026-02-01T10:00:00Z"
+  }
+  ```
+
+### <span style='color:#3BC143 ;font-weight: bold;'>CONFIRM S3 EXPORTING</span>
+
+method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_id}</span>
+
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
+
+- headers
+
+  ```json
+  {
+    "Authorization": "Bearer access_token"
+  }
+  ```
+
+- response
+  ```json
+  {
+    "export_id": "uuid",
+    "status": "completed",
+    "file_url": "https://bucket.s3.amazonaws.com/election-uuid.csv",
+    "file_size_bytes": 9823749823,
+    "completed_at": "2026-02-01T10:20:00Z"
   }
   ```
 
