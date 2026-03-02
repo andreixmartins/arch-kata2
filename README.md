@@ -1093,7 +1093,6 @@ Describe your stack, what databases would be used, what servers, what kind of co
 - Container: Docker
 - Orchestration: EKS Kubernetes
 - API: REST
-- Auth: OAuth2 + JWT
 - Databases: DynamoDB + PostgreSQL + ElasticCache
 - Messaging: Kafka (AWS MSK)
 - CI/CD: GitHub Actions + ArgoCD
