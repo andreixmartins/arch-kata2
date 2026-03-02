@@ -990,11 +990,25 @@ Explain the techniques, principles, types of tests and will be performaned, and 
 
 ### 🖹 9. Observability strategy
 
-Explain the techniques, principles,types of observability that will be used, key metrics, what would be logged and how to design proper dashboards and alerts.
+- Zero Vote Loss Policy: Any discrepancy between received and persisted votes must trigger immediate alerts.
+- Real-Time Monitoring: All critical voting metrics must be visible in near real-time.
+- Full Request Traceability: Each vote must be traceable across services.
+- Security-First Logging: Sensitive data (tokens, vote payloads, identity hashes) must never be logged.
+- Proactive Alerting: Detect issues before users notice them.
+- Dashboard design: Grafana provides real-time dashboards.
+- Metrics dashboards should contain errors, alert identifying any service errors
 
-- Dojo system will generated service metrics , the metrics will be consumed by Prometheus,Grafana and Loki stack
-- Grafana will provide customized dashboards to identify errors , alerts and also providing ways to troubleshoot
-- Metrics dashboards should contain errors,alert identifying any service errors
+Logging Strategy
+
+- INFO: Successful vote submission, export creation, admin access.
+- WARN: Duplicate vote attempt, rate limit exceeded.
+- ERROR: Vote persistence failure, messaging failure, database timeout.
+
+Alerting Strategy
+
+- Alerts: Managed through Prometheus AlertManager and integrated with Slack and PagerDuty.
+- Critical Alerts: Vote loss detected (immediate escalation), Error rate above threshold, DynamoDB write failure rate exceeds 1%
+- Warning Alerts: High CPU or memory usage, cache hit ratio degradation, increased authentication failures.
 
 ### 🖹 10. Data Store Designs
 1. PostgreSQL (Authentication and Identity)
