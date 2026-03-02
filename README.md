@@ -449,7 +449,7 @@ Tradeoffs:
 #### <span style='color:#3BC143 ;font-weight: bold;'>Submit login credentials</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>POST</span>
-path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FLOW_ID</span>
+path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login</span>
 
 - headers
 
