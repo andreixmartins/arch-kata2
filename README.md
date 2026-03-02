@@ -4,7 +4,7 @@
 
 ### 1. 🎯 Problem Statement and Context
 
-Build a voting system for a huge tv show or event where 300 Million people might use it. Voting system cannot crash, lose votes, real time results, consistent 
+Build a voting system for a huge tv show or event where 300 Million people might use it. Voting system cannot crash, lose votes, real time results, consistent
 
 1. Realtime voting
 2. 250.000 request per second
@@ -14,7 +14,6 @@ Build a voting system for a huge tv show or event where 300 Million people might
 6. Realtime results
 
 - Restrictions
-
   - Serverless
   - MongoDB
   - On-premise infrastructure
@@ -32,7 +31,6 @@ Build a voting system for a huge tv show or event where 300 Million people might
 - **Stay Online:** Even if part of the system breaks, the rest must keep working so people can still vote.
 - **No Double voting:** We need to make sure nobody votes twice.
 
-
 ### 3. 🎯 Non-Goals
 
 - **No monolith:** We won't build one giant block of software. We will break it into small pieces so it's easier to manage.
@@ -45,19 +43,17 @@ Build a voting system for a huge tv show or event where 300 Million people might
 
 1. **Security:** Security is non-negotiable; all components must have security controls in place.
 2. **Event-Driven Architecture:** Use asynchronous ingestion via a message broker (kafka/sqs) to decouple high-velocity writes from processing.
-4. **Optimistic UI Updates:** Provide the user with immediate visual confirmation of their vote while the actual sync happens asynchronously in the background.
-5. **Reactive State Management:** Use BLoC or Signals to ensure the UI reacts instantly to backend streams without unnecessary full-screen rebuilds.
-6. **Hardware-Backed Security:** Leverage Native Channels to access biometric hardware, ensuring the "one-person-one-vote" rule is tied to the physical device.
-7. **Graceful Degradation:** If the network is congested, the app should automatically disable heavy animations and simplify the UI to prioritize the voting action.
-8. **Observability** Fast feedbacks, detect, diagnose, and fix problems faster
-
+3. **Optimistic UI Updates:** Provide the user with immediate visual confirmation of their vote while the actual sync happens asynchronously in the background.
+4. **Reactive State Management:** Use BLoC or Signals to ensure the UI reacts instantly to backend streams without unnecessary full-screen rebuilds.
+5. **Hardware-Backed Security:** Leverage Native Channels to access biometric hardware, ensuring the "one-person-one-vote" rule is tied to the physical device.
+6. **Graceful Degradation:** If the network is congested, the app should automatically disable heavy animations and simplify the UI to prioritize the voting action.
+7. **Observability** Fast feedbacks, detect, diagnose, and fix problems faster
 
 ### 🏗️ 5. Overall Diagrams
 
 🗂️ 5.1 Overall architecture
 
 <img src="images/final-aws-massive-voter-model.png">
-
 
 🗂️ 5.2 Deployment
 
@@ -84,7 +80,7 @@ Tradeoffs:
 ```
 1. Flutter vs Native
 2. Route53 vs CloudFlare
-3. CloudFront vs Akamai 
+3. CloudFront vs Akamai
 4. AWS ECS on Fargate vs AWS EKS on Fargate
 5. AWS RDS PostgreSQL vs AWS DynamoDB
 6. AWS MSK (KAFKA) vs AWS SQS
@@ -161,7 +157,7 @@ Tradeoffs:
 
 ---
 
-## CloudFront vs Akamai 
+## CloudFront vs Akamai
 
 ### CloudFront
 
@@ -173,21 +169,21 @@ Tradeoffs:
 #### CONS (-)
 
 - **Vendor Lock-in:** Strong AWS coupling, IAM integration makes migration even harder.
-- **Pricing Complexity:** price varies between regions, extra features have an additional cost, the first 1000 cache misses are free. 
+- **Pricing Complexity:** price varies between regions, extra features have an additional cost, the first 1000 cache misses are free.
 
 ### Akamai
 
 #### PROS (+)
 
 - **Global Reach:** Extremely mature, global presence more than 20 years of edge infraestructure evolution.
-- **Multi-Cloud:**  Works independently of any cloud, easier in hybrid or multi-cloud strategies
+- **Multi-Cloud:** Works independently of any cloud, easier in hybrid or multi-cloud strategies
 
 #### CONS (-)
 
 - **Higher Cost:** Overkill for small and middle systems best suited for large enterprises with negotiation leverage.
 
 ---
-  
+
 ## AWS ECS on Fargate vs AWS EKS on Fargate
 
 ### AWS EKS on Fargate
@@ -538,7 +534,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/.well-known/jwks.json</spa
 }
 ```
 
-
 ### <span style='color:#3BC143 ;font-weight: bold;'>USER CHOOSES VOTING OPTIONS</span>
 
 #### <span style='color:#3BC143 ;font-weight: bold;'>List open elections</span>
@@ -565,7 +560,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/elections?status=OPEN</s
 
   ```json
   {
-    "elections":[
+    "elections": [
       {
         "election_id": "uuid",
         "name": "Election Name",
@@ -588,7 +583,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}</
   3. Response code failure for invalid fields must be 400 Bad Request
   4. Response code failure for unauthorized must be 401 Unauthorized
   5. Response code failure for forbidden operation must be 403 Forbidden.
-
   - headers
 
   ```json
@@ -629,7 +623,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/submit</span>
   3. Response code failure for invalid fields must be 400 Bad Request
   4. Response code failure for unauthorized must be 401 Unauthorized
   5. Response code failure for forbidden operation must be 403 Forbidden.
-
   - headers
 
   ```json
@@ -651,6 +644,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/submit</span>
   ```
 
   -response
+
   ```json
   {
     "receipt_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -670,7 +664,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}/{voter_i
   3. Response code failure for invalid fields must be 400 Bad Request
   4. Response code failure for unauthorized must be 401 Unauthorized
   5. Response code failure for forbidden operation must be 403 Forbidden.
-
   - headers
 
   ```json
@@ -680,6 +673,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}/{voter_i
   ```
 
   -response
+
   ```json
   {
     "status": "vote_confirmed",
@@ -704,7 +698,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}</span>
   3. Response code failure for invalid fields must be 400 Bad Request
   4. Response code failure for unauthorized must be 401 Unauthorized
   5. Response code failure for forbidden operation must be 403 Forbidden.
-
   - headers
 
   ```json
@@ -714,6 +707,7 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}</span>
   ```
 
   -response
+
   ```json
   {
     "status": "vote_successfully_recorded",
@@ -721,38 +715,39 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/votes/{vote_id}</span>
     "timestamp": "2026-02-01T10:00:00Z"
   }
   ```
-  
+
 ### <span style='color:#3BC143 ;font-weight: bold;'>ACCESS ADMIN WORKSPACE</span>
 
 method: <span style='color:#FFBE33;font-weight: bold;'>GET</span>
 path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections?status=draft?status=open?name=ElectionName?starts_after=2026-01-01</span>
 
-  1. Authorization header with valid Bearer token is required.
-  2. Response code success must be 200 Ok
-  3. Response code failure for invalid fields must be 400 Bad Request
-  4. Response code failure for unauthorized must be 401 Unauthorized
-  5. Response code failure for forbidden operation must be 403 Forbidden.
+1. Authorization header with valid Bearer token is required.
+2. Response code success must be 200 Ok
+3. Response code failure for invalid fields must be 400 Bad Request
+4. Response code failure for unauthorized must be 401 Unauthorized
+5. Response code failure for forbidden operation must be 403 Forbidden.
 
-  - headers
+- headers
 
-  ```json
+```json
+{
+  "Authorization": "Bearer access_token"
+}
+```
+
+-response
+
+```json
+[
   {
-    "Authorization": "Bearer access_token"
+    "election_id": "uuid",
+    "name": "ElectionName",
+    "status": "OPEN",
+    "starts_at": "2026-02-01T00:00:00Z",
+    "ends_at": "2026-04-01T20:00:00Z"
   }
-  ```
-
-  -response
-  ```json
-  [
-    {
-      "election_id": "uuid",
-      "name": "ElectionName",
-      "status": "OPEN",
-      "starts_at": "2026-02-01T00:00:00Z",
-      "ends_at": "2026-04-01T20:00:00Z"
-    }
-  ]
-  ```
+]
+```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>SEARCH POLL BY LOCATION</span>
 
@@ -774,17 +769,18 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/poll/{c
   ```
 
 -response
-  ```json
-    [
-      {
-        "election_id": "uuid",
-        "name": "ElectionName",
-        "status": "closed",
-        "ends_at": "2026-02-01T10:00:00Z",
-        "total_votes": 250000000
-      }
-    ]
-  ```
+
+```json
+[
+  {
+    "election_id": "uuid",
+    "name": "ElectionName",
+    "status": "closed",
+    "ends_at": "2026-02-01T10:00:00Z",
+    "total_votes": 250000000
+  }
+]
+```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>SELECT POLL INFORMATION</span>
 
@@ -828,23 +824,23 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/poll/{e
 4. Response code failure for unauthorized must be 401 Unauthorized
 5. Response code failure for forbidden operation must be 403 Forbidden.
 
-  - headers
+- headers
 
+```json
+{
+  "Authorization": "Bearer access_token"
+}
+```
+
+- response
   ```json
   {
-    "Authorization": "Bearer access_token"
+    "total_votes": 12500000,
+    "votes_last_hour": 250000,
+    "status": "OPEN",
+    "participation_rate": 0.62
   }
   ```
-
-  - response
-    ```json
-    {
-      "total_votes": 12500000,
-      "votes_last_hour": 250000,
-      "status": "OPEN",
-      "participation_rate": 0.62
-    }
-    ```
 
 ### <span style='color:#3BC143 ;font-weight: bold;'>EXPORT POLL INFORMATION TO S3</span>
 
@@ -864,8 +860,9 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/elections/poll/{e
     "Authorization": "Bearer access_token"
   }
   ```
-  
+
 - request
+
   ```json
   {
     "format": "csv"
@@ -927,61 +924,75 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 ### **users**
 
-| Name             | Type        | Size     | NOT NULL | Default           | Description         |
-| ---------------- | ----------- | -------- | -------- | ----------------- | ------------------- |
-| user_id          | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key         |
-| auth_provider    | text        | var      | YES      |                   | e.g., Google, Apple |
-| auth_provider_id | text        | var      | YES      |                   | Unique per provider |
-| email            | text        | var      | NO       |                   | Optional contact    |
-| phone            | text        | var      | NO       |                   | Optional contact    |
-| created_at       | timestamptz | 8 bytes  | YES      | now()             | Creation timestamp  |
-| modified_at      | timestamptz | 8 bytes  | NO       |                   | Last modification   |
+```json
+{
+  "users": {
+    "user_id": "uuid", // Primary key, NOT NULL, default: gen_random_uuid(), 16 bytes
+    "auth_provider": "text", // NOT NULL, e.g. Google, Apple
+    "auth_provider_id": "text", // NOT NULL, unique per provider (external auth ID)
+    "email": "text", // Optional contact, nullable
+    "phone": "text", // Optional contact, nullable
+    "created_at": "timestamptz", // NOT NULL, default: now(), creation timestamp
+    "modified_at": "timestamptz" // Nullable, last modification timestamp
+  }
+}
+```
 
 ---
 
 ### **voter_identities**
 
-| Name          | Type        | Size     | NOT NULL | Default           | Description                            |
-| ------------- | ----------- | -------- | -------- | ----------------- | -------------------------------------- |
-| voter_id      | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key (global voter identity)    |
-| user_id       | uuid        | 16 bytes | YES      |                   | FK → users(user_id)                    |
-| identity_hash | text        | var      | YES      |                   | Hashed real identity for deduplication |
-| created_at    | timestamptz | 8 bytes  | YES      | now()             | Creation timestamp                     |
-| modified_at   | timestamptz | 8 bytes  | NO       |                   | Last modification                      |
+```json
+{
+  "voter_identities": {
+    "voter_id": "uuid", // Primary key (global voter identity), NOT NULL, default: gen_random_uuid()
+    "user_id": "uuid", // NOT NULL, FK -> users(user_id)
+    "identity_hash": "text", // NOT NULL, hashed real identity for deduplication
+    "created_at": "timestamptz", // NOT NULL, default: now(), creation timestamp
+    "modified_at": "timestamptz" // Nullable, last modification timestamp
+  }
+}
+```
 
 ---
 
 ### **elections**
 
-| Name        | Type        | Size     | NOT NULL | Default           | Description           |
-| ----------- | ----------- | -------- | -------- | ----------------- | --------------------- |
-| election_id | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key           |
-| name        | text        | var      | YES      |                   | Election/display name |
-| status      | text        | var      | YES      |                   | draft, open, closed   |
-| starts_at   | timestamptz | 8 bytes  | NO       |                   | When voting starts    |
-| ends_at     | timestamptz | 8 bytes  | NO       |                   | When voting ends      |
-| modified_at | timestamptz | 8 bytes  | NO       |                   | Last modification     |
+```json
+{
+  "elections": {
+    "election_id": "uuid", // Primary key, NOT NULL, default: gen_random_uuid()
+    "name": "text", // NOT NULL, election/display name
+    "status": "text", // NOT NULL, values: draft | open | closed
+    "starts_at": "timestamptz", // Nullable, when voting starts
+    "ends_at": "timestamptz", // Nullable, when voting ends
+    "modified_at": "timestamptz" // Nullable, last modification timestamp
+  }
+}
+```
 
 ---
 
 ### **votes**
 
-| Name              | Type        | Size     | NOT NULL | Default           | Description                                          |
-| ----------------- | ----------- | -------- | -------- | ----------------- | ---------------------------------------------------- |
-| vote_id           | uuid        | 16 bytes | YES      | gen_random_uuid() | Primary key                                          |
-| election_id       | uuid        | 16 bytes | YES      |                   | FK → elections(election_id)                          |
-| voter_id          | uuid        | 16 bytes | YES      |                   | FK → voter_identities(voter_id)                      |
-| vote_payload      | jsonb       | var      | YES      |                   | Encrypted/anonymized ballot                          |
-| timestamp         | timestamptz | 8 bytes  | YES      | now()             | Vote submission time                                 |
-| receipt_hash      | text        | var      | YES      |                   | Unique vote receipt                                  |
-| modified_at       | timestamptz | 8 bytes  | NO       |                   | Last modification                                    |
-| uq_election_voter | UNIQUE      | —        | —        | —                 | (election_id, voter_id) enforces one vote per person |
+```json
+{
+  "votes": {
+    "vote_id": "uuid", // Primary key, NOT NULL, default: gen_random_uuid()
+    "election_id": "uuid", // NOT NULL, FK -> elections(election_id)
+    "voter_id": "uuid", // NOT NULL, FK -> voter_identities(voter_id)
+    "vote_payload": "jsonb", // NOT NULL, encrypted/anonymized ballot
+    "timestamp": "timestamptz", // NOT NULL, default: now(), vote submission time
+    "receipt_hash": "text", // NOT NULL, unique vote receipt
+    "modified_at": "timestamptz", // Nullable, last modification timestamp
+    "uq_election_voter": "(election_id, voter_id)" // UNIQUE constraint, enforces one vote per person per election
+  }
+}
+```
 
 ---
 
-
 #### 6.4 - Algorithms/Data Structures : Specific algos that need to be used, along size with spesific data structures.
-
 
 ### 🖹 7. Migrations
 
@@ -1037,13 +1048,17 @@ Alerting Strategy
 - Warning Alerts: High CPU or memory usage, cache hit ratio degradation, increased authentication failures.
 
 ### 🖹 10. Data Store Designs
+
 1. PostgreSQL (Authentication and Identity)
+
 - Exclusively handles identity management, Oauth2 tokens, and user profiles via ORY Hydra (OAuth2) and ORY Kratos (Identity).
 
 2. Amazon DynamoDB (Voting Source of Truth)
+
 - Stores the actual immutable votes and aggregated results.
 
-3. Amazon ElasticCache 
+3. Amazon ElasticCache
+
 - Serves the real-time aggregated results.
 
 ### 🖹 11. Technology Stack
