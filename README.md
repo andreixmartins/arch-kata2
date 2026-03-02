@@ -613,10 +613,14 @@ path: <span style='color:#FFBE33;font-weight: bold;'>v1/election/{election_id}</
      "vote_payload": {
        "participants": [
          {
-           "name": "Participant 1 name"
+           "name": "Participant 1 name",
+           "description": "Participant 1 Description",
+           "image": "Participant 1 Image"
          },
          {
-           "name": "Participant 2 name"
+           "name": "Participant 2 name",
+           "description": "Participant 2 Description",
+           "image": "Participant 2 Image"
          }
        ]
      }
