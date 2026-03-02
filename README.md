@@ -882,14 +882,6 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/self-service/login?flow=FL
 
 #### 6.4 - Algorithms/Data Structures : Specific algos that need to be used, along size with spesific data structures.
 
-- Circuit breaker Pattern
-- Retry with backoff
-- Queue for message notifications
-- REDIS SET data structure for POCs Caching.
-
-Samples of other components: Batch jobs, Events, 3rd Party Integrations, Streaming, ML Models, ChatBots, etc...
-
-Recommended Reading: http://diego-pacheco.blogspot.com/2018/05/internal-system-design-forgotten.html
 
 ### 🖹 7. Migrations
 
