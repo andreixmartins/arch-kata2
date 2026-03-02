@@ -1111,10 +1111,11 @@ Attributes
 - votePayload    : Map/String | Required | Encrypted/anonymized ballot payload
 - createdAt      : String   | Required | Creation timestamp in ISO-8601 format
 - updatedAt      : String   | Optional | Last update timestamp in ISO-8601 format
+- electionShdKey : String   | Required | Election Sharding key
 
 Global Secondary Indexes
-- election-timestamp-index
-  - PK: electionId
+- election-sharded-index
+  - PK: electionShdKey
   - SK: timestamp
   - Purpose: query votes for one election in time order
 
@@ -1135,6 +1136,7 @@ Global Secondary Indexes
     "votePayload": "JSON", // NOT NULL, encrypted/anonymized ballot
     "createdAt": "Instant", // NOT NULL, default: now()
     "updatedAt": "Instant" // Nullable, last update timestamp
+    "electionShdKey": "String" // NOT NULL, Election Sharding key
   }
 }
 ```
