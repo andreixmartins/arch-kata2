@@ -1012,6 +1012,9 @@ path: <span style='color:#FFBE33;font-weight: bold;'>/v1/admin/exports/{export_i
 
 #### 6.4 - Algorithms/Data Structures : Specific algos that need to be used, along size with spesific data structures.
 
+- **Replay**
+- **Back-Pressure**
+
 ### 🖹 7. Migrations
 
 IF Migrations are required describe the migrations strategy with proper diagrams, text and tradeoffs.
