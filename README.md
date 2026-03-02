@@ -931,11 +931,14 @@ Explain the techniques, principles,types of observability that will be used, key
 - Metrics dashboards should contain errors,alert identifying any service errors
 
 ### 🖹 10. Data Store Designs
+1. PostgreSQL (Authentication and Identity)
+- Exclusively handles identity management, Oauth2 tokens, and user profiles via ORY Hydra (OAuth2) and ORY Kratos (Identity).
 
-- AWS S3 for videos, images, text files, reports
-- AWS RDS Postgres for structured data
-- AWS Elastic cache for caching data
-- AWS Keyspaces (Apache Cassandra)
+2. Amazon DynamoDB (Voting Source of Truth)
+- Stores the actual immutable votes and aggregated results.
+
+3. Amazon ElasticCache 
+- Serves the real-time voute counts to the connected clients.
 
 ### 🖹 11. Technology Stack
 
